@@ -161,56 +161,64 @@ async def similar_products(req: SimilarProductRequest):
 
 @app.post("/predictions/cart-abandonment")
 async def predict_abandonment(req: CartAbandonmentRequest):
-    """Predict cart abandonment probability"""
-    
-    # Get session features
+    """
+    Predict cart abandonment probability.
+    Uses all events of the session within the last 90 days (or configurable window).
+    """
+    # Fetch session events
     query = f"""
         SELECT
-            COUNT(*) as event_count,
-            SUM(CASE WHEN event_type = 'add_to_cart' THEN 1 ELSE 0 END) as cart_adds,
-            SUM(CASE WHEN event_type = 'product_view' THEN 1 ELSE 0 END) as product_views,
-            MAX(cart_total) as cart_value,
-            AVG(price) as avg_price,
-            dateDiff('second', MIN(timestamp), MAX(timestamp)) as session_duration
+            COUNT(*) AS event_count,
+            SUM(CASE WHEN event_type = 'add_to_cart' THEN 1 ELSE 0 END) AS cart_adds,
+            SUM(CASE WHEN event_type = 'product_view' THEN 1 ELSE 0 END) AS product_views,
+            SUM(CASE WHEN event_type = 'purchase' THEN 1 ELSE 0 END) AS purchases,
+            MAX(cart_total) AS cart_value,
+            AVG(price) AS avg_price,
+            dateDiff('second', MIN(timestamp), MAX(timestamp)) AS session_duration
         FROM events
         WHERE session_id = '{req.session_id}'
-        AND timestamp >= now() - INTERVAL 2 HOUR
+        AND timestamp >= now('Asia/Dhaka') - INTERVAL 90 DAY
     """
-    
-    features_df = ch_client.query_df(query)
-    
-    if features_df.empty or features_df['cart_adds'].iloc[0] == 0:
-        return {"risk_level": "low", "probability": 0.0}
-    
-    # Simple rule-based prediction (replace with trained model)
-    cart_value = features_df['cart_value'].iloc[0] or 0
-    session_duration = features_df['session_duration'].iloc[0] or 0
-    cart_adds = features_df['cart_adds'].iloc[0]
-    
-    # Calculate risk score
+
+    df = ch_client.query_df(query)
+
+    if df.empty or df['cart_adds'].iloc[0] == 0:
+        return {"risk_level": "low", "probability": 0}
+
+    cart_value = df['cart_value'].iloc[0] or 0
+    session_duration = df['session_duration'].iloc[0] or 0
+    cart_adds = df['cart_adds'].iloc[0]
+    purchases = df['purchases'].iloc[0]
+
+    # Risk scoring
     risk_score = 0.0
-    
     if cart_value > 100:
         risk_score += 0.3
-    if session_duration < 60:
+    if session_duration < 600:  # <10 mins
         risk_score += 0.2
-    if cart_adds > 3:
+    if cart_adds >= 3:
         risk_score += 0.3
-    
+    if purchases == 0 and cart_adds > 0:
+        risk_score += 0.2
+
     probability = min(risk_score, 0.95)
-    
+
     if probability > 0.6:
         risk_level = "high"
     elif probability > 0.3:
         risk_level = "medium"
     else:
         risk_level = "low"
-    
+
     return {
         "risk_level": risk_level,
         "probability": probability,
-        "cart_value": float(cart_value)
+        "cart_value": float(cart_value),
+        "cart_adds": int(cart_adds),
+        "purchases": int(purchases),
+        "session_duration": int(session_duration)
     }
+
 
 train_cart_abandonment_model()
 train_product_recommendation_matrix()
