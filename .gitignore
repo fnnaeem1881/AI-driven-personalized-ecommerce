@@ -1,0 +1,62 @@
+# ----------------------
+# OS files
+# ----------------------
+.DS_Store
+Thumbs.db
+
+# ----------------------
+# Laravel / backend
+# ----------------------
+/backend/vendor/
+/backend/node_modules/
+/backend/storage/*
+!/backend/storage/.gitignore
+/backend/.env
+/backend/.phpunit.result.cache
+/backend/.idea/
+backend/.vscode/
+
+# ----------------------
+# Python / services
+# ----------------------
+# Virtual environments
+/services/event-service/venv/
+/services/ai-service/venv/
+
+# Python cache
+**/__pycache__/
+**/*.py[cod]
+**/*.pyo
+*.pyd
+*.egg-info/
+*.egg
+
+# Python logs
+*.log
+
+# Python env files
+**/.env
+**/.env.*
+
+# Pylint / mypy
+**/.mypy_cache/
+**/.pytest_cache/
+**/.coverage
+
+# ----------------------
+# Pickle / Model files
+# ----------------------
+/services/ai-service/recommender.pkl
+
+# ----------------------
+# Databases
+# ----------------------
+/databases/clickhouse/
+
+# ----------------------
+# Misc
+# ----------------------
+*.swp
+*.swo
+.idea/
+.vscode/
