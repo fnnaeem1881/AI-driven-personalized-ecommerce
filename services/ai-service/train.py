@@ -1,22 +1,22 @@
 # train.py
 import clickhouse_connect
 import pandas as pd
-import numpy as np
+import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, classification_report
-import joblib
+from sklearn.metrics import classification_report, accuracy_score
 
+# ClickHouse connection
 ch_client = clickhouse_connect.get_client(
     host='syym5je3fm.asia-southeast1.gcp.clickhouse.cloud',
     user='default',
     password='oR0n3ljHAc_e7',
     secure=True
 )
-print("Result:", ch_client.query("SELECT 1").result_set[0][0])
 
 def train_cart_abandonment_model():
+
     print("📊 Fetching training data...")
 
     query = """
@@ -24,16 +24,16 @@ def train_cart_abandonment_model():
             SELECT
                 session_id,
                 user_id,
-                COUNT(*) as event_count,
-                SUM(CASE WHEN event_type = 'add_to_cart' THEN 1 ELSE 0 END) as cart_adds,
-                SUM(CASE WHEN event_type = 'product_view' THEN 1 ELSE 0 END) as views,
-                SUM(CASE WHEN event_type = 'purchase' THEN 1 ELSE 0 END) as purchases,
-                MAX(cart_total) as cart_value,
-                AVG(price) as avg_price,
-                MAX(price) as max_price,
-                dateDiff('second', MIN(timestamp), MAX(timestamp)) as duration,
-                toHour(MIN(timestamp)) as start_hour,
-                toDayOfWeek(MIN(timestamp)) as day_of_week
+                COUNT(*) AS event_count,
+                SUM(event_type = 'add_to_cart') AS cart_adds,
+                SUM(event_type = 'product_view') AS views,
+                SUM(event_type = 'purchase') AS purchases,
+                MAX(cart_total) AS cart_value,
+                AVG(price) AS avg_price,
+                MAX(price) AS max_price,
+                dateDiff('second', MIN(timestamp), MAX(timestamp)) AS duration,
+                toHour(MIN(timestamp)) AS start_hour,
+                toDayOfWeek(MIN(timestamp)) AS day_of_week
             FROM events
             WHERE timestamp >= now() - INTERVAL 90 DAY
             GROUP BY session_id, user_id
@@ -42,32 +42,36 @@ def train_cart_abandonment_model():
     """
 
     df = ch_client.query_df(query)
-    print(f"✓ Loaded {len(df)} sessions")
 
     if df.empty:
-        print("⚠️ No data available for training. Skipping model.")
-        return None, None
+        raise Exception("❌ No training data found")
 
-    # Safe check for purchases column
-    if 'purchases' not in df.columns:
-        df['purchases'] = 0
+    # Target: 1 = converted, 0 = abandoned
+    df["converted"] = (df["purchases"] > 0).astype(int)
 
-    df['converted'] = (df['purchases'] > 0).astype(int)
-
-    feature_cols = [
-        'event_count', 'cart_adds', 'views', 'cart_value',
-        'avg_price', 'max_price', 'duration', 'start_hour', 'day_of_week'
+    features = [
+        "event_count",
+        "cart_adds",
+        "views",
+        "cart_value",
+        "avg_price",
+        "max_price",
+        "duration",
+        "start_hour",
+        "day_of_week"
     ]
 
-    X = df[feature_cols].fillna(0)
-    y = df['converted']
+    X = df[features].fillna(0)
+    y = df["converted"]
 
-    if y.nunique() == 1:
-        print("⚠️ Only one class in target. Skipping training.")
-        return None, None
+    if y.nunique() < 2:
+        raise Exception("❌ Only one class found")
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+        X, y,
+        test_size=0.2,
+        random_state=42,
+        stratify=y
     )
 
     scaler = StandardScaler()
@@ -75,52 +79,24 @@ def train_cart_abandonment_model():
     X_test_scaled = scaler.transform(X_test)
 
     model = RandomForestClassifier(
-        n_estimators=100,
-        max_depth=10,
+        n_estimators=200,
+        max_depth=12,
         min_samples_split=10,
-        random_state=42,
-        class_weight='balanced'
+        class_weight="balanced",
+        random_state=42
     )
+
     model.fit(X_train_scaled, y_train)
 
-    y_pred = model.predict(X_test_scaled)
-    print(f"\n✓ Model Accuracy: {accuracy_score(y_test, y_pred):.2%}")
-    print("\nClassification Report:")
-    print(classification_report(y_test, y_pred))
+    preds = model.predict(X_test_scaled)
 
-    joblib.dump(model, 'cart_abandonment_model.pkl')
-    joblib.dump(scaler, 'cart_abandonment_scaler.pkl')
-    print("✅ Model saved successfully!")
+    print("✅ Accuracy:", accuracy_score(y_test, preds))
+    print(classification_report(y_test, preds))
 
-    return model, scaler
+    joblib.dump(model, "cart_abandonment_model.pkl")
+    joblib.dump(scaler, "cart_abandonment_scaler.pkl")
 
-def train_product_recommendation_matrix():
-    print("📊 Building recommendation matrix...")
+    print("💾 Model & scaler saved")
 
-    query = """
-        SELECT 
-            user_id,
-            product_id,
-            SUM(CASE WHEN event_type = 'purchase' THEN 5
-                     WHEN event_type = 'add_to_cart' THEN 3
-                     WHEN event_type = 'product_view' THEN 1
-                     ELSE 0 END) as interaction_score
-        FROM events
-        WHERE user_id IS NOT NULL
-        AND timestamp >= now() - INTERVAL 90 DAY
-        GROUP BY user_id, product_id
-        HAVING interaction_score > 0
-    """
-
-    df = ch_client.query_df(query)
-
-    if df.empty:
-        print("⚠️ No user-product interactions found.")
-        return df
-
-    df.to_csv('user_product_matrix.csv', index=False)
-    print(f"✓ Matrix saved: {len(df)} interactions")
-    print(f"  Users: {df['user_id'].nunique()}")
-    print(f"  Products: {df['product_id'].nunique()}")
-    return df
-print("\n✅ Training completed!")
+if __name__ == "__main__":
+    train_cart_abandonment_model()

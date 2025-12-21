@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 import clickhouse_connect
 import pandas as pd
 import numpy as np
@@ -8,22 +8,31 @@ from sklearn.metrics.pairwise import cosine_similarity
 import joblib
 import redis
 import json
-from train import train_product_recommendation_matrix,train_cart_abandonment_model
-from datetime import datetime, timedelta
+
 
 app = FastAPI(title="AI/ML Service")
 
-# Connections
+
 ch_client = clickhouse_connect.get_client(
-        host='syym5je3fm.asia-southeast1.gcp.clickhouse.cloud',
-        user='default',
-        password='oR0n3ljHAc_e7',
-        secure=True
-    )
-print("Result clickhouse_connect:", ch_client.query("SELECT 1").result_set[0][0])
+    host='syym5je3fm.asia-southeast1.gcp.clickhouse.cloud',
+    user='default',
+    password='oR0n3ljHAc_e7',
+    secure=True
+)
+print("✅ ClickHouse connected")
 
 redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
-print("Result redis_client:", ch_client.query("SELECT 1").result_set[0][0])
+print("✅ Redis connected")
+
+
+try:
+    cart_model = joblib.load("cart_abandonment_model.pkl")
+    cart_scaler = joblib.load("cart_abandonment_scaler.pkl")
+    print("✅ Cart abandonment ML model loaded")
+except Exception as e:
+    cart_model = None
+    cart_scaler = None
+    print("❌ Failed to load ML model:", e)
 
 class RecommendationRequest(BaseModel):
     user_id: int
@@ -37,198 +46,184 @@ class CartAbandonmentRequest(BaseModel):
     session_id: str
     user_id: Optional[int] = None
 
+
 @app.post("/recommendations/collaborative")
 async def collaborative_filtering(req: RecommendationRequest):
-    """Collaborative filtering: Users who liked X also liked Y"""
-    
+
     cache_key = f"collab:{req.user_id}:{req.limit}"
     cached = redis_client.get(cache_key)
     if cached:
         return json.loads(cached)
-    
-    # Get user-product interaction matrix (last 60 days)
+
     query = """
         SELECT 
             user_id,
             product_id,
-            COUNT(*) as interactions,
-            SUM(CASE WHEN event_type = 'purchase' THEN 3
-                     WHEN event_type = 'add_to_cart' THEN 2
-                     WHEN event_type = 'product_view' THEN 1
-                     ELSE 0 END) as weighted_score
+            SUM(
+                CASE 
+                    WHEN event_type = 'purchase' THEN 3
+                    WHEN event_type = 'add_to_cart' THEN 2
+                    WHEN event_type = 'product_view' THEN 1
+                    ELSE 0
+                END
+            ) AS weighted_score
         FROM events
-        WHERE event_type IN ('product_view', 'add_to_cart', 'purchase')
-        AND user_id IS NOT NULL
+        WHERE user_id IS NOT NULL
         AND timestamp >= now() - INTERVAL 60 DAY
         GROUP BY user_id, product_id
-        HAVING interactions >= 2
+        HAVING weighted_score >= 2
     """
-    
+
     df = ch_client.query_df(query)
-    
-    if df.empty or req.user_id not in df['user_id'].values:
+
+    if df.empty or req.user_id not in df["user_id"].values:
         return {"recommendations": []}
-    
-    # Create user-product matrix
+
     matrix = df.pivot_table(
-        index='user_id',
-        columns='product_id',
-        values='weighted_score',
+        index="user_id",
+        columns="product_id",
+        values="weighted_score",
         fill_value=0
     )
-    
-    # Find similar users
+
     if req.user_id not in matrix.index:
         return {"recommendations": []}
-    
+
     user_vector = matrix.loc[req.user_id].values.reshape(1, -1)
     similarities = cosine_similarity(user_vector, matrix.values)[0]
-    
-    # Get top similar users (excluding self)
-    similar_user_indices = np.argsort(similarities)[::-1][1:11]
-    
-    # Aggregate recommendations from similar users
+
+    similar_indices = np.argsort(similarities)[::-1][1:11]
+
     recommendations = {}
     user_products = set(matrix.columns[matrix.loc[req.user_id] > 0])
-    
-    for idx in similar_user_indices:
-        similar_user_id = matrix.index[idx]
-        user_prods = matrix.loc[similar_user_id]
-        
-        for prod_id, score in user_prods[user_prods > 0].items():
-            if prod_id not in user_products:
-                recommendations[prod_id] = recommendations.get(prod_id, 0) + score * similarities[idx]
-    
-    # Sort and limit
-    sorted_recs = sorted(recommendations.items(), key=lambda x: x[1], reverse=True)[:req.limit]
-    
+
+    for idx in similar_indices:
+        sim_user = matrix.index[idx]
+        for pid, score in matrix.loc[sim_user].items():
+            if pid not in user_products and score > 0:
+                recommendations[pid] = recommendations.get(pid, 0) + score * similarities[idx]
+
+    top = sorted(recommendations.items(), key=lambda x: x[1], reverse=True)[:req.limit]
+
     result = {
         "recommendations": [
-            {"product_id": int(pid), "score": float(score)}
-            for pid, score in sorted_recs
+            {"product_id": int(pid), "score": round(float(score), 4)}
+            for pid, score in top
         ]
     }
-    
-    # Cache for 30 minutes
+
     redis_client.setex(cache_key, 1800, json.dumps(result))
-    
     return result
 
 @app.post("/recommendations/similar")
 async def similar_products(req: SimilarProductRequest):
-    """Content-based: Similar products based on category and price"""
-    
+
     cache_key = f"similar:{req.product_id}:{req.limit}"
     cached = redis_client.get(cache_key)
     if cached:
         return json.loads(cached)
-    
-    # Get products that are frequently viewed together
+
     query = f"""
-        WITH target_sessions AS (
+        WITH sessions AS (
             SELECT DISTINCT session_id
             FROM events
             WHERE product_id = {req.product_id}
             AND event_type = 'product_view'
             AND timestamp >= now() - INTERVAL 30 DAY
         )
-        SELECT 
+        SELECT
             product_id,
-            COUNT(DISTINCT session_id) as co_views,
-            AVG(price) as avg_price
+            COUNT(DISTINCT session_id) AS co_views
         FROM events
-        WHERE session_id IN (SELECT session_id FROM target_sessions)
+        WHERE session_id IN (SELECT session_id FROM sessions)
         AND product_id != {req.product_id}
         AND event_type = 'product_view'
         GROUP BY product_id
         ORDER BY co_views DESC
         LIMIT {req.limit}
     """
-    
-    result_df = ch_client.query_df(query)
-    
+
+    df = ch_client.query_df(query)
+
     result = {
         "similar_products": [
-            {"product_id": int(row['product_id']), "score": float(row['co_views'])}
-            for _, row in result_df.iterrows()
+            {"product_id": int(row.product_id), "score": int(row.co_views)}
+            for row in df.itertuples()
         ]
     }
-    
-    # Cache for 1 hour
+
     redis_client.setex(cache_key, 3600, json.dumps(result))
-    
     return result
 
+
 @app.post("/predictions/cart-abandonment")
-async def predict_abandonment(req: CartAbandonmentRequest):
-    """
-    Predict cart abandonment probability.
-    Uses all events of the session within the last 90 days (or configurable window).
-    """
-    # Fetch session events
+async def predict_cart_abandonment(req: CartAbandonmentRequest):
+
+    if cart_model is None:
+        raise HTTPException(500, "ML model not loaded")
+
     query = f"""
         SELECT
             COUNT(*) AS event_count,
-            SUM(CASE WHEN event_type = 'add_to_cart' THEN 1 ELSE 0 END) AS cart_adds,
-            SUM(CASE WHEN event_type = 'product_view' THEN 1 ELSE 0 END) AS product_views,
-            SUM(CASE WHEN event_type = 'purchase' THEN 1 ELSE 0 END) AS purchases,
+            SUM(event_type = 'add_to_cart') AS cart_adds,
+            SUM(event_type = 'product_view') AS views,
+            SUM(event_type = 'purchase') AS purchases,
             MAX(cart_total) AS cart_value,
             AVG(price) AS avg_price,
-            dateDiff('second', MIN(timestamp), MAX(timestamp)) AS session_duration
+            MAX(price) AS max_price,
+            dateDiff('second', MIN(timestamp), MAX(timestamp)) AS duration,
+            toHour(MIN(timestamp)) AS start_hour,
+            toDayOfWeek(MIN(timestamp)) AS day_of_week
         FROM events
         WHERE session_id = '{req.session_id}'
-        AND timestamp >= now('Asia/Dhaka') - INTERVAL 90 DAY
     """
 
     df = ch_client.query_df(query)
 
-    if df.empty or df['cart_adds'].iloc[0] == 0:
-        return {"risk_level": "low", "probability": 0}
+    if df.empty or df["cart_adds"].iloc[0] == 0:
+        return {"risk_level": "low", "probability": 0.0}
 
-    cart_value = df['cart_value'].iloc[0] or 0
-    session_duration = df['session_duration'].iloc[0] or 0
-    cart_adds = df['cart_adds'].iloc[0]
-    purchases = df['purchases'].iloc[0]
+    X = df[[
+        "event_count",
+        "cart_adds",
+        "views",
+        "cart_value",
+        "avg_price",
+        "max_price",
+        "duration",
+        "start_hour",
+        "day_of_week"
+    ]].fillna(0)
 
-    # Risk scoring
-    risk_score = 0.0
-    if cart_value > 100:
-        risk_score += 0.3
-    if session_duration < 600:  # <10 mins
-        risk_score += 0.2
-    if cart_adds >= 3:
-        risk_score += 0.3
-    if purchases == 0 and cart_adds > 0:
-        risk_score += 0.2
+    X_scaled = cart_scaler.transform(X)
 
-    probability = min(risk_score, 0.95)
+    prob_convert = cart_model.predict_proba(X_scaled)[0][1]
+    prob_abandon = round(1 - prob_convert, 4)
+    # print(X.to_dict())
 
-    if probability > 0.6:
-        risk_level = "high"
-    elif probability > 0.3:
-        risk_level = "medium"
+    if prob_abandon >= 0.5:
+        risk = "high"
+    elif prob_abandon >= 0.25:
+        risk = "medium"
     else:
-        risk_level = "low"
+        risk = "low"
 
     return {
-        "risk_level": risk_level,
-        "probability": probability,
-        "cart_value": float(cart_value),
-        "cart_adds": int(cart_adds),
-        "purchases": int(purchases),
-        "session_duration": int(session_duration)
+        "session_id": req.session_id,
+        "risk_level": risk,
+        "probability": prob_abandon
     }
 
 
-train_cart_abandonment_model()
-train_product_recommendation_matrix()
 @app.get("/health")
 async def health():
     return {
         "status": "healthy",
         "redis": redis_client.ping(),
-        "clickhouse": ch_client.ping()
+        "clickhouse": ch_client.ping(),
+        "model_loaded": cart_model is not None
     }
+
 
 if __name__ == "__main__":
     import uvicorn
