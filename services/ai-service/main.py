@@ -48,9 +48,6 @@ except Exception as e:
     print(f"❌ Redis connection failed: {e}")
     redis_client = None
 
-# ============================================================================
-# LOAD ML MODELS
-# ============================================================================
 
 def load_model_safe(filepath, description):
     """Safely load a model with error handling"""
@@ -103,10 +100,6 @@ print(f"Popular Products Data: {'✓ Loaded' if popular_products_df is not None 
 print(f"User-Product Matrix: {'✓ Loaded' if user_product_matrix_df is not None else '✗ Not Loaded'}")
 print("="*60 + "\n")
 
-# ============================================================================
-# REQUEST/RESPONSE MODELS
-# ============================================================================
-
 class RecommendationRequest(BaseModel):
     user_id: int
     limit: int = 10
@@ -129,10 +122,6 @@ class PopularProductsRequest(BaseModel):
 class TrendingProductsRequest(BaseModel):
     limit: int = 10
     days: int = 7
-
-# ============================================================================
-# API ENDPOINTS
-# ============================================================================
 
 @app.post("/recommendations/collaborative")
 async def collaborative_filtering(req: RecommendationRequest):
@@ -660,10 +649,6 @@ async def health():
     }
 
 
-# ============================================================================
-# HELPER FUNCTIONS
-# ============================================================================
-
 async def get_popular_products_fallback(limit: int):
     """Fallback to popular products when collaborative filtering fails"""
     if popular_products_df is not None and not popular_products_df.empty:
@@ -690,18 +675,15 @@ def get_abandonment_recommendation(risk_level: str, cart_value: float):
         return "no_action_needed"
 
 
-# ============================================================================
-# STARTUP MESSAGE
-# ============================================================================
 
 @app.on_event("startup")
 async def startup_event():
     print("\n" + "="*60)
-    print("✅ AI/ML Service Started Successfully!")
+    print(" AI/ML Service Started Successfully!")
     print("="*60)
-    print(f"📚 API Documentation: http://localhost:8001/docs")
-    print(f"📊 Health Check: http://localhost:8001/health")
-    print(f"🔧 Model Performance: http://localhost:8001/analytics/model-performance")
+    print(f" API Documentation: http://localhost:8001/docs")
+    print(f" Health Check: http://localhost:8001/health")
+    print(f" Model Performance: http://localhost:8001/analytics/model-performance")
     print("="*60 + "\n")
 
 

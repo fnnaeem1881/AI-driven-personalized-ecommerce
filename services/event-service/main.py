@@ -8,20 +8,16 @@ import asyncio
 from datetime import datetime
 import pytz  # for timezone handling
 
-# ------------------ Timezone ------------------
 dhaka_tz = pytz.timezone("Asia/Dhaka")
 
-# ------------------ FastAPI App ------------------
 app = FastAPI(title="Event Collection Service")
 
-# ------------------ Redis ------------------
 redis_client = redis.Redis(
     host="localhost",
     port=6379,
     decode_responses=True
 )
 
-# ------------------ ClickHouse ------------------
 ch_client = clickhouse_connect.get_client(
     host="syym5je3fm.asia-southeast1.gcp.clickhouse.cloud",
     user="default",
@@ -31,7 +27,6 @@ ch_client = clickhouse_connect.get_client(
 
 print("Result clickhouse_connect:", ch_client.query("SELECT 1").result_set[0][0])
 
-# ------------------ Models ------------------
 class Event(BaseModel):
     event_id: str
     event_type: str
@@ -42,7 +37,6 @@ class Event(BaseModel):
     ip_address: str
     user_agent: str
 
-# ------------------ Initialize ClickHouse ------------------
 def init_clickhouse():
     ch_client.command("""
         CREATE TABLE IF NOT EXISTS events (
@@ -68,13 +62,11 @@ def init_clickhouse():
     """)
     print("✓ ClickHouse table initialized")
 
-# ------------------ Startup ------------------
 @app.on_event("startup")
 async def startup_event():
     init_clickhouse()
     asyncio.create_task(process_queue_worker())
 
-# ------------------ Redis Worker ------------------
 async def process_queue_worker():
     print("🔄 Queue worker started")
     while True:
@@ -89,7 +81,6 @@ async def process_queue_worker():
             print(f"Queue worker error: {e}")
             await asyncio.sleep(1)
 
-# ------------------ Store Event ------------------
 async def store_event(event: Event):
     try:
         # Convert incoming timestamp to Dhaka timezone
@@ -148,7 +139,6 @@ async def store_event(event: Event):
         print(f"Error storing event: {e}")
 
 
-# ------------------ API Routes ------------------
 @app.post("/collect")
 async def collect_event(event: Event, background_tasks: BackgroundTasks):
     background_tasks.add_task(store_event, event)
