@@ -1,4 +1,3 @@
-# main.py - Complete AI/ML Service with All Features
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
@@ -18,13 +17,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-print(f"\n🚀 Starting AI/ML Service")
-print(f"📁 Working directory: {os.getcwd()}")
-print(f"⏰ Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+print(f"\n Starting AI/ML Service")
+print(f" Working directory: {os.getcwd()}")
+print(f" Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
-# ============================================================================
-# CONNECTIONS
-# ============================================================================
 
 # ClickHouse connection
 try:
