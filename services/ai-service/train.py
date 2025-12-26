@@ -1,4 +1,3 @@
-# train.py - Complete Training Script with Error Handling
 import clickhouse_connect
 import pandas as pd
 import numpy as np
@@ -24,10 +23,10 @@ try:
         password='oR0n3ljHAc_e7',
         secure=True
     )
-    print("✅ ClickHouse connected")
+    print(" ClickHouse connected")
     print("Result:", ch_client.query("SELECT 1").result_set[0][0])
 except Exception as e:
-    print(f"❌ Failed to connect to ClickHouse: {e}")
+    print(f" Failed to connect to ClickHouse: {e}")
     sys.exit(1)
 
 def safe_save_csv(df, filename, description="file"):
@@ -39,21 +38,21 @@ def safe_save_csv(df, filename, description="file"):
             try:
                 os.rename(filepath, filepath)  # Test if file is accessible
             except OSError:
-                print(f"⚠️ Warning: {filename} is open in another program. Attempting backup save...")
+                print(f" Warning: {filename} is open in another program. Attempting backup save...")
                 backup_path = filepath.replace('.csv', '_backup.csv')
                 df.to_csv(backup_path, index=False)
-                print(f"✓ Saved to backup: {backup_path}")
+                print(f" Saved to backup: {backup_path}")
                 return backup_path
         
         df.to_csv(filepath, index=False)
-        print(f"✓ Saved {description}: {filepath}")
+        print(f" Saved {description}: {filepath}")
         return filepath
     except PermissionError:
-        print(f"❌ Permission denied: {filepath}")
+        print(f" Permission denied: {filepath}")
         print(f"   Please close {filename} if it's open in Excel or another program")
         return None
     except Exception as e:
-        print(f"❌ Error saving {filename}: {e}")
+        print(f" Error saving {filename}: {e}")
         return None
 
 def safe_save_model(model, filename, description="model"):
@@ -61,16 +60,16 @@ def safe_save_model(model, filename, description="model"):
     filepath = os.path.join('models', filename)
     try:
         joblib.dump(model, filepath)
-        print(f"✓ Saved {description}: {filepath}")
+        print(f" Saved {description}: {filepath}")
         return filepath
     except Exception as e:
-        print(f"❌ Error saving {filename}: {e}")
+        print(f" Error saving {filename}: {e}")
         return None
 
 def train_cart_abandonment_model():
     """Train cart abandonment prediction model"""
     print("\n" + "="*60)
-    print("📊 Training Cart Abandonment Model")
+    print(" Training Cart Abandonment Model")
     print("="*60)
 
     try:
@@ -97,10 +96,10 @@ def train_cart_abandonment_model():
         """
 
         df = ch_client.query_df(query)
-        print(f"✓ Loaded {len(df)} sessions")
+        print(f" Loaded {len(df)} sessions")
 
         if df.empty:
-            print("⚠️ No data available for training. Skipping model.")
+            print(" No data available for training. Skipping model.")
             return None, None
 
         # Create target variable
@@ -123,7 +122,7 @@ def train_cart_abandonment_model():
         y = df['converted']
 
         if y.nunique() == 1:
-            print("⚠️ Only one class in target. Skipping training.")
+            print(" Only one class in target. Skipping training.")
             return None, None
 
         # Split data
@@ -137,7 +136,7 @@ def train_cart_abandonment_model():
         X_test_scaled = scaler.transform(X_test)
 
         # Train model
-        print("🤖 Training Random Forest model...")
+        print(" Training Random Forest model...")
         model = RandomForestClassifier(
             n_estimators=100,
             max_depth=10,
@@ -151,7 +150,7 @@ def train_cart_abandonment_model():
         y_pred = model.predict(X_test_scaled)
         accuracy = accuracy_score(y_test, y_pred)
         
-        print(f"\n✓ Model Accuracy: {accuracy:.2%}")
+        print(f"\n Model Accuracy: {accuracy:.2%}")
         print("\nClassification Report:")
         print(classification_report(y_test, y_pred, target_names=['Abandoned', 'Converted']))
 
@@ -161,7 +160,7 @@ def train_cart_abandonment_model():
             'importance': model.feature_importances_
         }).sort_values('importance', ascending=False)
         
-        print("\n📊 Top Features:")
+        print("\n Top Features:")
         print(feature_importance.head(5).to_string(index=False))
 
         # Save models
@@ -171,7 +170,7 @@ def train_cart_abandonment_model():
         return model, scaler
 
     except Exception as e:
-        print(f"❌ Error training cart abandonment model: {e}")
+        print(f" Error training cart abandonment model: {e}")
         import traceback
         traceback.print_exc()
         return None, None
@@ -180,7 +179,7 @@ def train_cart_abandonment_model():
 def train_user_segmentation():
     """Train user segmentation using K-Means clustering"""
     print("\n" + "="*60)
-    print("📊 Training User Segmentation Model")
+    print(" Training User Segmentation Model")
     print("="*60)
 
     try:
@@ -205,10 +204,10 @@ def train_user_segmentation():
         df = ch_client.query_df(query)
         
         if df.empty or len(df) < 10:
-            print("⚠️ Insufficient user data for segmentation.")
+            print(" Insufficient user data for segmentation.")
             return None, None, None
 
-        print(f"✓ Loaded {len(df)} users")
+        print(f" Loaded {len(df)} users")
 
         # Calculate recency
         df['last_activity'] = pd.to_datetime(df['last_activity'])
@@ -257,7 +256,7 @@ def train_user_segmentation():
             else:
                 segment_names[seg] = 'Casual Shoppers'
 
-        print("\n📊 User Segments:")
+        print("\n User Segments:")
         print("-" * 80)
         for seg in segment_analysis.index:
             print(f"\nSegment {seg}: {segment_names[seg]}")
@@ -278,7 +277,7 @@ def train_user_segmentation():
         return kmeans, scaler, segment_names
 
     except Exception as e:
-        print(f"❌ Error training user segmentation: {e}")
+        print(f" Error training user segmentation: {e}")
         import traceback
         traceback.print_exc()
         return None, None, None
@@ -287,7 +286,7 @@ def train_user_segmentation():
 def train_product_recommendation_matrix():
     """Build user-product interaction matrix"""
     print("\n" + "="*60)
-    print("📊 Building Product Recommendation Matrix")
+    print(" Building Product Recommendation Matrix")
     print("="*60)
 
     try:
@@ -309,7 +308,7 @@ def train_product_recommendation_matrix():
         df = ch_client.query_df(query)
 
         if df.empty:
-            print("⚠️ No user-product interactions found.")
+            print(" No user-product interactions found.")
             return df
 
         # Save
@@ -322,7 +321,7 @@ def train_product_recommendation_matrix():
         return df
 
     except Exception as e:
-        print(f"❌ Error building recommendation matrix: {e}")
+        print(f" Error building recommendation matrix: {e}")
         import traceback
         traceback.print_exc()
         return pd.DataFrame()
@@ -331,7 +330,7 @@ def train_product_recommendation_matrix():
 def analyze_product_popularity():
     """Analyze popular products"""
     print("\n" + "="*60)
-    print("📊 Analyzing Product Popularity")
+    print(" Analyzing Product Popularity")
     print("="*60)
 
     try:
@@ -354,7 +353,7 @@ def analyze_product_popularity():
         df = ch_client.query_df(query)
         
         if df.empty:
-            print("⚠️ No product data found.")
+            print(" No product data found.")
             return df
 
         # Calculate popularity score
@@ -374,7 +373,7 @@ def analyze_product_popularity():
         return df
 
     except Exception as e:
-        print(f"❌ Error analyzing product popularity: {e}")
+        print(f" Error analyzing product popularity: {e}")
         import traceback
         traceback.print_exc()
         return pd.DataFrame()
@@ -383,7 +382,7 @@ def analyze_product_popularity():
 def generate_training_report():
     """Generate training summary"""
     print("\n" + "="*60)
-    print("📊 TRAINING SUMMARY REPORT")
+    print("TRAINING SUMMARY REPORT")
     print("="*60)
     
     models = {
@@ -400,15 +399,15 @@ def generate_training_report():
         'Popular Products': 'data/popular_products.csv',
     }
     
-    print("\n✅ Trained Models:")
+    print("\n Trained Models:")
     for name, file in models.items():
-        status = "✓ Exists" if os.path.exists(file) else "✗ Missing"
+        status = " Exists" if os.path.exists(file) else "✗ Missing"
         size = f"({os.path.getsize(file) / 1024:.1f} KB)" if os.path.exists(file) else ""
         print(f"  {status} - {name} {size}")
     
-    print("\n✅ Generated Data Files:")
+    print("\n Generated Data Files:")
     for name, file in data_files.items():
-        status = "✓ Exists" if os.path.exists(file) else "✗ Missing"
+        status = " Exists" if os.path.exists(file) else "✗ Missing"
         size = f"({os.path.getsize(file) / 1024:.1f} KB)" if os.path.exists(file) else ""
         print(f"  {status} - {name} {size}")
     
@@ -429,9 +428,9 @@ if __name__ == "__main__":
             with open(test_file, 'w') as f:
                 f.write('test')
             os.remove(test_file)
-            print("✓ Write permissions verified\n")
+            print(" Write permissions verified\n")
         except:
-            print("❌ No write permissions in current directory!")
+            print(" No write permissions in current directory!")
             print("   Please run as administrator or check folder permissions\n")
         
         # Train models
@@ -444,13 +443,13 @@ if __name__ == "__main__":
         generate_training_report()
         
         print("\n" + "="*60)
-        print("✅ ALL TRAINING COMPLETED SUCCESSFULLY!")
+        print(" ALL TRAINING COMPLETED SUCCESSFULLY!")
         print("="*60)
         print(f"Finished at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
     except KeyboardInterrupt:
-        print("\n\n⚠️ Training interrupted by user")
+        print("\n\n Training interrupted by user")
     except Exception as e:
-        print(f"\n❌ Training failed with error: {e}")
+        print(f"\n Training failed with error: {e}")
         import traceback
         traceback.print_exc()
