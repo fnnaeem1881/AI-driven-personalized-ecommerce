@@ -228,7 +228,7 @@ def train_user_segmentation():
         # Cluster
         n_clusters = min(5, len(df) // 5)
         
-        print(f"🤖 Clustering into {n_clusters} segments...")
+        print(f"Clustering into {n_clusters} segments...")
         
         kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
         df['segment'] = kmeans.fit_predict(X_scaled)
