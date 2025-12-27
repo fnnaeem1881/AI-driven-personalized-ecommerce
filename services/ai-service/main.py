@@ -30,18 +30,18 @@ try:
         password='oR0n3ljHAc_e7',
         secure=True
     )
-    print("✅ ClickHouse connected")
+    print(" ClickHouse connected")
 except Exception as e:
-    print(f"❌ ClickHouse connection failed: {e}")
+    print(f" ClickHouse connection failed: {e}")
     ch_client = None
 
 # Redis connection
 try:
     redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
     redis_client.ping()
-    print("✅ Redis connected")
+    print(" Redis connected")
 except Exception as e:
-    print(f"❌ Redis connection failed: {e}")
+    print(f" Redis connection failed: {e}")
     redis_client = None
 
 
@@ -50,13 +50,13 @@ def load_model_safe(filepath, description):
     if os.path.exists(filepath):
         try:
             model = joblib.load(filepath)
-            print(f"✅ {description} loaded from {filepath}")
+            print(f" {description} loaded from {filepath}")
             return model
         except Exception as e:
-            print(f"❌ Failed to load {description}: {e}")
+            print(f" Failed to load {description}: {e}")
             return None
     else:
-        print(f"⚠️ {description} not found at {filepath}")
+        print(f" {description} not found at {filepath}")
         return None
 
 def load_csv_safe(filepath, description):
@@ -64,13 +64,13 @@ def load_csv_safe(filepath, description):
     if os.path.exists(filepath):
         try:
             df = pd.read_csv(filepath)
-            print(f"✅ {description} loaded from {filepath} ({len(df)} rows)")
+            print(f" {description} loaded from {filepath} ({len(df)} rows)")
             return df
         except Exception as e:
-            print(f"❌ Failed to load {description}: {e}")
+            print(f" Failed to load {description}: {e}")
             return None
     else:
-        print(f"⚠️ {description} not found at {filepath}")
+        print(f" {description} not found at {filepath}")
         return None
 
 # Load cart abandonment model
@@ -88,7 +88,7 @@ user_product_matrix_df = load_csv_safe("data/user_product_matrix.csv", "User-pro
 user_segments_df = load_csv_safe("data/user_segments.csv", "User segments")
 
 print("\n" + "="*60)
-print("📊 MODEL STATUS SUMMARY")
+print(" MODEL STATUS SUMMARY")
 print("="*60)
 print(f"Cart Abandonment Model: {'✓ Loaded' if cart_model else '✗ Not Loaded'}")
 print(f"User Segmentation Model: {'✓ Loaded' if segment_model else '✗ Not Loaded'}")

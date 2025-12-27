@@ -416,7 +416,7 @@ def generate_training_report():
 
 if __name__ == "__main__":
     print("\n" + "="*60)
-    print("🚀 AI E-commerce ML Training Pipeline")
+    print(" AI E-commerce ML Training Pipeline")
     print("="*60)
     print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Working directory: {os.getcwd()}\n")
