@@ -126,11 +126,21 @@
                 </div>
                 <div class="flex justify-between">
                     <dt class="text-gray-500">Payment</dt>
-                    <dd><span class="badge {{ $order->payment_status === 'paid' ? 'badge-green' : 'badge-yellow' }}">{{ ucfirst($order->payment_status) }}</span></dd>
+                    <dd>
+                        @php
+                            $pCls = match($order->payment_status) {
+                                'paid'     => 'badge-green',
+                                'failed'   => 'badge-red',
+                                'refunded' => 'badge-purple',
+                                default    => 'badge-yellow',
+                            };
+                        @endphp
+                        <span class="badge {{ $pCls }}">{{ ucfirst($order->payment_status) }}</span>
+                    </dd>
                 </div>
                 <div class="flex justify-between">
                     <dt class="text-gray-500">Method</dt>
-                    <dd class="text-gray-700 capitalize">{{ str_replace('_', ' ', $order->payment_method) }}</dd>
+                    <dd class="text-gray-700 capitalize">{{ str_replace('_', ' ', $order->payment_method ?? '—') }}</dd>
                 </div>
                 @if($order->tracking_number)
                 <div class="flex justify-between">
@@ -139,6 +149,37 @@
                 </div>
                 @endif
             </dl>
+        </div>
+
+        {{-- Payment & Tracking Edit --}}
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="font-semibold text-gray-800 mb-4">Payment & Tracking</h3>
+            <form method="POST" action="{{ route('admin.orders.payment', $order) }}" class="space-y-3">
+                @csrf @method('PATCH')
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Payment Status</label>
+                    <select name="payment_status" class="form-input">
+                        @foreach(['pending','paid','failed','refunded'] as $ps)
+                            <option value="{{ $ps }}" {{ $order->payment_status === $ps ? 'selected' : '' }}>{{ ucfirst($ps) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Payment Method</label>
+                    <input type="text" name="payment_method" value="{{ $order->payment_method }}"
+                           class="form-input" placeholder="e.g. cash_on_delivery, card">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Tracking Number</label>
+                    <input type="text" name="tracking_number" value="{{ $order->tracking_number }}"
+                           class="form-input" placeholder="e.g. TRK-123456789">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Admin Notes</label>
+                    <textarea name="notes" rows="2" class="form-input resize-none" placeholder="Internal notes…">{{ $order->notes }}</textarea>
+                </div>
+                <button type="submit" class="btn-primary w-full justify-center">Save Payment Info</button>
+            </form>
         </div>
 
         {{-- Customer info --}}

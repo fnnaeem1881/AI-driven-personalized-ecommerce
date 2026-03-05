@@ -39,11 +39,11 @@
             {{-- Support --}}
             <div>
                 <h4 style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#94A3B8;margin-bottom:1.25rem;">Support</h4>
-                <a href="#" class="footer-link">Help Center</a>
-                <a href="#" class="footer-link">Shipping Info</a>
-                <a href="#" class="footer-link">Returns Policy</a>
-                <a href="#" class="footer-link">Track Order</a>
-                <a href="#" class="footer-link">Contact Us</a>
+                <a href="{{ route('support.help') }}" class="footer-link">Help Center</a>
+                <a href="{{ route('support.shipping') }}" class="footer-link">Shipping Info</a>
+                <a href="{{ route('support.returns') }}" class="footer-link">Returns Policy</a>
+                <a href="{{ route('support.track') }}" class="footer-link">Track Order</a>
+                <a href="{{ route('support.contact') }}" class="footer-link">Contact Us</a>
             </div>
         </div>
 

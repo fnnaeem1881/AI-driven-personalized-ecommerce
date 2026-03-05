@@ -56,4 +56,18 @@ class OrderController extends Controller
 
         return back()->with('success', 'Order status updated to ' . ucfirst($request->status) . '.');
     }
+
+    public function updatePayment(Request $request, Order $order)
+    {
+        $request->validate([
+            'payment_status'  => 'required|in:pending,paid,failed,refunded',
+            'payment_method'  => 'nullable|string|max:50',
+            'tracking_number' => 'nullable|string|max:100',
+            'notes'           => 'nullable|string|max:500',
+        ]);
+
+        $order->update($request->only(['payment_status', 'payment_method', 'tracking_number', 'notes']));
+
+        return back()->with('success', 'Order payment info updated.');
+    }
 }

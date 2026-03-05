@@ -12,7 +12,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::withCount('orders')->with('roles')->latest();
+        $query = User::withCount('orders')->withSum('orders', 'total')->with('roles')->latest();
 
         if ($request->search) {
             $query->where(function ($q) use ($request) {

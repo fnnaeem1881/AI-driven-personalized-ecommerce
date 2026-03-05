@@ -36,6 +36,7 @@ class SettingController extends Controller
             'min_order_amount'         => 'nullable|numeric|min:0',
             'store_status'             => 'required|in:open,maintenance',
             'maintenance_message'      => 'nullable|string|max:300',
+            'logo_url'                 => 'nullable|url|max:500',
             'hero_badge'               => 'nullable|string|max:100',
             'hero_title'               => 'nullable|string|max:100',
             'hero_subtitle'            => 'nullable|string|max:100',
@@ -43,7 +44,7 @@ class SettingController extends Controller
         ]);
 
         $keys = [
-            'theme', 'store_name',
+            'theme', 'store_name', 'logo_url',
             'currency', 'currency_symbol', 'currency_position',
             'contact_email', 'contact_phone', 'contact_address',
             'social_facebook', 'social_instagram', 'social_twitter', 'social_youtube',

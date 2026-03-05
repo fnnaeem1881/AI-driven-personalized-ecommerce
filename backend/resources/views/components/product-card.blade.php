@@ -9,8 +9,10 @@
 
         {{-- Badges --}}
         <div style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:4px;">
-            @if($product->discount_percent > 0)
-                <span class="badge badge-red">-{{ $product->discount_percent }}%</span>
+            @if($product->is_flash_deal)
+                <span class="badge badge-red">⚡ Flash Deal</span>
+            @elseif($product->discount_percent > 0)
+                <span class="badge badge-red">-{{ $product->flash_deal_discount ?? $product->discount_percent }}%</span>
             @endif
             @if($product->is_featured)
                 <span class="badge badge-purple">⭐ Featured</span>

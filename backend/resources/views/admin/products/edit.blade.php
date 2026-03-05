@@ -96,6 +96,27 @@
                 </label>
             </div>
 
+            <div class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">⚡ Flash Deal</h3>
+                <label class="flex items-center gap-3 cursor-pointer mb-4">
+                    <input type="hidden" name="is_flash_deal" value="0">
+                    <input type="checkbox" name="is_flash_deal" value="1" {{ old('is_flash_deal', $product->is_flash_deal) ? 'checked' : '' }} class="w-4 h-4 accent-red-500">
+                    <span class="text-sm text-gray-700 font-medium">Enable Flash Deal</span>
+                </label>
+                <div class="form-group">
+                    <label class="form-label">Deal Ends At</label>
+                    <input type="datetime-local" name="flash_deal_ends_at"
+                           value="{{ old('flash_deal_ends_at', $product->flash_deal_ends_at?->format('Y-m-d\TH:i')) }}"
+                           class="form-input">
+                </div>
+                <div class="form-group mb-0">
+                    <label class="form-label">Discount % <span class="text-gray-400 font-normal">(shown on card)</span></label>
+                    <input type="number" name="flash_deal_discount"
+                           value="{{ old('flash_deal_discount', $product->flash_deal_discount) }}"
+                           min="1" max="99" class="form-input" placeholder="e.g. 20">
+                </div>
+            </div>
+
             <button type="submit" class="btn-primary w-full justify-center py-3 text-base">
                 💾 Save Changes
             </button>

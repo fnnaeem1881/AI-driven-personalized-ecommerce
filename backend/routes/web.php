@@ -57,6 +57,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 });
 
+// ─── Support Pages ────────────────────────────────────────────────────────────
+Route::get('/help-center', fn() => view('support.help'))->name('support.help');
+Route::get('/shipping-info', fn() => view('support.shipping'))->name('support.shipping');
+Route::get('/returns-policy', fn() => view('support.returns'))->name('support.returns');
+Route::get('/track-order', fn() => view('support.track'))->name('support.track');
+Route::get('/contact', fn() => view('support.contact'))->name('support.contact');
+
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
@@ -71,6 +78,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
     Route::patch('orders/{order}/status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.status');
+    Route::patch('orders/{order}/payment', [\App\Http\Controllers\Admin\OrderController::class, 'updatePayment'])->name('orders.payment');
 
     // Users
     Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
@@ -91,6 +99,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Roles
     Route::resource('roles', \App\Http\Controllers\Admin\RoleController::class)
          ->except(['show']);
+
+    // Hero Slides
+    Route::resource('slides', \App\Http\Controllers\Admin\HeroSlideController::class)->except(['show']);
 
     // Permissions
     Route::get('permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions.index');

@@ -104,7 +104,15 @@
 
                     {{-- Orders --}}
                     <td class="px-5 py-3 text-center">
-                        <span class="badge badge-blue">{{ $user->orders_count }}</span>
+                        @if($user->orders_count > 0)
+                            <a href="{{ route('admin.orders.index', ['search' => $user->email]) }}"
+                               class="inline-block hover:opacity-80" title="View orders">
+                                <span class="badge badge-blue">{{ $user->orders_count }} orders</span>
+                            </a>
+                            <div class="text-xs text-gray-500 mt-0.5">{{ format_currency($user->orders_sum_total ?? 0) }}</div>
+                        @else
+                            <span class="text-xs text-gray-300">No orders</span>
+                        @endif
                     </td>
 
                     {{-- Joined --}}

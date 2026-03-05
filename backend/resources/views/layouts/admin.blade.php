@@ -72,6 +72,10 @@
            class="sidebar-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
             👥 <span>Users</span>
         </a>
+        <a href="{{ route('admin.slides.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.slides*') ? 'active' : '' }}">
+            🖼️ <span>Hero Slides</span>
+        </a>
         <a href="{{ route('admin.settings') }}"
            class="sidebar-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
             ⚙️ <span>Settings</span>

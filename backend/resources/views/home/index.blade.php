@@ -32,7 +32,40 @@
         <div>
             <div class="swiper hero-swiper" style="border-radius:16px;overflow:hidden;">
                 <div class="swiper-wrapper">
-                    {{-- Slide 1 — Dynamic from Settings --}}
+                    @if($heroSlides->count() > 0)
+                        @foreach($heroSlides as $slide)
+                        <div class="swiper-slide">
+                            <div class="hero-slide" style="min-height:420px;">
+                                @if($slide->image)
+                                <div class="hero-slide-bg" style="background-image:url('{{ $slide->image }}');"></div>
+                                @else
+                                <div class="hero-slide-bg" style="background-image:url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=1200');"></div>
+                                @endif
+                                <div class="hero-slide-content">
+                                    @if($slide->badge)
+                                    <span class="badge {{ $slide->badge_color ?? 'badge-blue' }}" style="margin-bottom:0.75rem;align-self:flex-start;">{{ $slide->badge }}</span>
+                                    @endif
+                                    <h1 style="font-size:2.5rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">
+                                        {{ $slide->title }}
+                                        @if($slide->subtitle)
+                                        <br><span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ $slide->subtitle }}</span>
+                                        @endif
+                                    </h1>
+                                    @if($slide->description)
+                                    <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">{{ $slide->description }}</p>
+                                    @endif
+                                    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                                        <a href="{{ $slide->cta_link }}" class="btn-primary">{{ $slide->cta_text }}</a>
+                                        @if($slide->cta_secondary_text)
+                                        <a href="{{ $slide->cta_secondary_link ?? route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">{{ $slide->cta_secondary_text }}</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    @else
+                    {{-- Fallback slides when no DB slides exist --}}
                     <div class="swiper-slide">
                         <div class="hero-slide" style="min-height:420px;">
                             <div class="hero-slide-bg" style="background-image:url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=1200');"></div>
@@ -42,7 +75,7 @@
                                     {{ store_setting('hero_title', 'Next-Gen Tech') }}<br>
                                     <span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ store_setting('hero_subtitle', 'At Your Fingertips') }}</span>
                                 </h1>
-                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">{{ store_setting('meta_description', 'Explore AI-curated electronics, gadgets & more. Fast delivery, easy returns.') }}</p>
+                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">{{ store_setting('meta_description', 'Explore AI-curated electronics, gadgets & more.') }}</p>
                                 <div style="display:flex;gap:1rem;flex-wrap:wrap;">
                                     <a href="{{ route('products.index') }}" class="btn-primary">{{ store_setting('hero_cta', 'Shop Now') }}</a>
                                     <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">Explore All</a>
@@ -50,15 +83,13 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- Slide 2 --}}
                     <div class="swiper-slide">
                         <div class="hero-slide" style="min-height:420px;">
                             <div class="hero-slide-bg" style="background-image:url('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200');"></div>
                             <div class="hero-slide-content">
                                 <span class="badge badge-purple" style="margin-bottom:0.75rem;align-self:flex-start;">📱 Flagship</span>
                                 <h1 style="font-size:2.5rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">Samsung Galaxy S24 Ultra<br><span style="background:linear-gradient(135deg,#8B5CF6,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">200MP. AI-Powered.</span></h1>
-                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">Built-in S Pen. Snapdragon 8 Gen 3. The most capable Galaxy smartphone. From $1,299.</p>
+                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">Built-in S Pen, Snapdragon 8 Gen 3. The most capable Galaxy smartphone.</p>
                                 <div style="display:flex;gap:1rem;flex-wrap:wrap;">
                                     <a href="{{ route('category.show', 'smartphones') }}" class="btn-primary">Shop Smartphones</a>
                                     <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">Learn More</a>
@@ -66,15 +97,13 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- Slide 3 --}}
                     <div class="swiper-slide">
                         <div class="hero-slide" style="min-height:420px;">
                             <div class="hero-slide-bg" style="background-image:url('https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=1200');"></div>
                             <div class="hero-slide-content">
                                 <span class="badge badge-cyan" style="margin-bottom:0.75rem;align-self:flex-start;">🎮 Gaming</span>
                                 <h1 style="font-size:2.5rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">PlayStation 5 Slim<br><span style="background:linear-gradient(135deg,#06B6D4,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Play Has No Limits.</span></h1>
-                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">Ultra-high speed SSD. Haptic feedback. Adaptive triggers. 4K gaming at 120fps. $449.99.</p>
+                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">Ultra-high speed SSD. Haptic feedback. Adaptive triggers. 4K gaming at 120fps.</p>
                                 <div style="display:flex;gap:1rem;flex-wrap:wrap;">
                                     <a href="{{ route('category.show', 'gaming') }}" class="btn-primary">Shop Gaming</a>
                                     <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">View All</a>
@@ -82,6 +111,7 @@
                             </div>
                         </div>
                     </div>
+                    @endif
                 </div>
                 <div class="swiper-pagination" style="bottom:16px;"></div>
                 <div class="swiper-button-prev"></div>

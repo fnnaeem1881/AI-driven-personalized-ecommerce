@@ -3,8 +3,13 @@
 
         {{-- Logo --}}
         <a href="{{ route('home') }}" class="header-logo flex items-center gap-2 shrink-0" style="text-decoration:none;">
-            <div style="width:36px;height:36px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 20px rgba(59,130,246,0.4);">⚡</div>
-            <span style="font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">TechNova</span>
+            @php $logoUrl = \App\Models\Setting::get('logo_url'); $storeName = \App\Models\Setting::get('store_name', 'TechNova'); @endphp
+            @if($logoUrl)
+                <img src="{{ $logoUrl }}" alt="{{ $storeName }}" style="height:36px;width:auto;object-fit:contain;">
+            @else
+                <div style="width:36px;height:36px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 20px rgba(59,130,246,0.4);">⚡</div>
+                <span style="font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ $storeName }}</span>
+            @endif
         </a>
 
         {{-- Search Bar --}}

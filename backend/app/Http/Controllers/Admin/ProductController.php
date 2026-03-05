@@ -94,23 +94,27 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $data = $request->validate([
-            'name'              => 'required|string|max:255',
-            'category_id'       => 'required|exists:categories,id',
-            'brand'             => 'required|string|max:100',
-            'price'             => 'required|numeric|min:0',
-            'compare_price'     => 'nullable|numeric|min:0',
-            'stock'             => 'required|integer|min:0',
-            'sku'               => 'required|string|unique:products,sku,' . $product->id,
-            'short_description' => 'required|string|max:500',
-            'description'       => 'required|string',
-            'image'             => 'required|string|url',
-            'rating'            => 'nullable|numeric|min:0|max:5',
-            'is_featured'       => 'boolean',
-            'is_active'         => 'boolean',
+            'name'                => 'required|string|max:255',
+            'category_id'         => 'required|exists:categories,id',
+            'brand'               => 'required|string|max:100',
+            'price'               => 'required|numeric|min:0',
+            'compare_price'       => 'nullable|numeric|min:0',
+            'stock'               => 'required|integer|min:0',
+            'sku'                 => 'required|string|unique:products,sku,' . $product->id,
+            'short_description'   => 'required|string|max:500',
+            'description'         => 'required|string',
+            'image'               => 'required|string|url',
+            'rating'              => 'nullable|numeric|min:0|max:5',
+            'is_featured'         => 'boolean',
+            'is_active'           => 'boolean',
+            'is_flash_deal'       => 'boolean',
+            'flash_deal_ends_at'  => 'nullable|date',
+            'flash_deal_discount' => 'nullable|integer|min:1|max:99',
         ]);
 
-        $data['is_featured'] = $request->boolean('is_featured');
-        $data['is_active']   = $request->boolean('is_active');
+        $data['is_featured']   = $request->boolean('is_featured');
+        $data['is_active']     = $request->boolean('is_active');
+        $data['is_flash_deal'] = $request->boolean('is_flash_deal');
 
         $product->update($data);
 

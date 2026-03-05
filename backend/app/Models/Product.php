@@ -13,15 +13,18 @@ class Product extends Model
         'category_id', 'name', 'slug', 'description', 'short_description',
         'price', 'compare_price', 'stock', 'sku', 'brand', 'rating',
         'reviews_count', 'image', 'specs', 'is_featured', 'is_active',
+        'is_flash_deal', 'flash_deal_ends_at', 'flash_deal_discount',
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
-        'compare_price' => 'decimal:2',
-        'rating' => 'decimal:2',
-        'specs' => 'array',
-        'is_featured' => 'boolean',
-        'is_active' => 'boolean',
+        'price'              => 'decimal:2',
+        'compare_price'      => 'decimal:2',
+        'rating'             => 'decimal:2',
+        'specs'              => 'array',
+        'is_featured'        => 'boolean',
+        'is_active'          => 'boolean',
+        'is_flash_deal'      => 'boolean',
+        'flash_deal_ends_at' => 'datetime',
     ];
 
     public function category()
