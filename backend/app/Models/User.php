@@ -19,7 +19,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name', 'email', 'password',
-        'phone', 'address', 'city', 'state', 'zip', 'country', 'avatar',
+        'phone', 'address', 'city', 'state', 'zip', 'country', 'avatar', 'role',
     ];
 
     /**
@@ -68,5 +68,10 @@ class User extends Authenticatable
     public function hasInWishlist(int $productId): bool
     {
         return $this->wishlists()->where('product_id', $productId)->exists();
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 }

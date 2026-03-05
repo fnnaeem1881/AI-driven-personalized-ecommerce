@@ -17,6 +17,9 @@
             @auth
                 <span style="color:#94A3B8;">Hi, {{ auth()->user()->name }}</span>
                 <a href="{{ route('orders.index') }}" style="color:#64748B; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color='#64748B'">My Orders</a>
+                @if(auth()->user()->isAdmin())
+                    <a href="{{ route('admin.dashboard') }}" style="color:#8B5CF6; text-decoration:none; font-weight:600;" onmouseover="this.style.color='#A78BFA'" onmouseout="this.style.color='#8B5CF6'">⚙ Admin</a>
+                @endif
             @else
                 <a href="{{ route('login') }}" style="color:#64748B; text-decoration:none;" onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color='#64748B'">Sign In</a>
                 <a href="{{ route('register') }}" style="color:#64748B; text-decoration:none;" onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color='#64748B'">Register</a>

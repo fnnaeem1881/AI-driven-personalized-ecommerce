@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+@php $siteTheme = \App\Models\Setting::get('theme', 'dark'); @endphp
+<html lang="en" class="scroll-smooth" data-theme="{{ $siteTheme }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +21,7 @@
 
     @stack('styles')
 </head>
-<body class="min-h-screen" style="background-color:#060b14">
+<body class="min-h-screen" style="background-color:var(--bg-dark);color:var(--text-primary);">
 
     {{-- Flash Messages --}}
     @if(session('success'))

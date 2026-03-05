@@ -26,6 +26,95 @@
   --border-hover:  rgba(59, 130, 246, 0.4);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT THEME OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+
+:root[data-theme="light"] {
+  --bg-dark:        #F1F5F9;
+  --bg-card:        #FFFFFF;
+  --bg-elevated:    #F8FAFC;
+  --text-primary:   #0F172A;
+  --text-muted:     #475569;
+  --text-subtle:    #64748B;
+  --border:         rgba(15, 23, 42, 0.1);
+  --border-hover:   rgba(59, 130, 246, 0.5);
+  --primary-glow:   rgba(59, 130, 246, 0.2);
+  --secondary-glow: rgba(139, 92, 246, 0.2);
+}
+
+/* Light theme — targeted overrides for hardcoded inline-style colors */
+[data-theme="light"] .main-header {
+  background: rgba(255, 255, 255, 0.97) !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  backdrop-filter: blur(12px);
+}
+[data-theme="light"] .search-bar {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+[data-theme="light"] .search-bar input {
+  background: transparent !important;
+  color: #0F172A !important;
+}
+[data-theme="light"] .search-bar input::placeholder { color: #94A3B8 !important; }
+[data-theme="light"] .header-logo span { color: #0F172A !important; }
+[data-theme="light"] .cat-sidebar {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+[data-theme="light"] .cat-item { color: #374151 !important; }
+[data-theme="light"] .cat-item:hover { background: #F1F5F9 !important; color: #1D4ED8 !important; }
+[data-theme="light"] .cat-item .cat-icon { color: inherit !important; }
+[data-theme="light"] .product-card {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+}
+[data-theme="light"] .product-card:hover {
+  box-shadow: 0 8px 30px rgba(59,130,246,0.15) !important;
+  border-color: rgba(59,130,246,0.3) !important;
+}
+[data-theme="light"] .card-overlay {
+  background: rgba(248, 250, 252, 0.97) !important;
+}
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: #E2E8F0 !important;
+}
+[data-theme="light"] .filter-group h4 { color: #1E293B !important; }
+[data-theme="light"] .filter-checkbox span { color: #374151 !important; }
+[data-theme="light"] .filter-checkbox input[type="radio"],
+[data-theme="light"] .filter-checkbox input[type="checkbox"] { accent-color: #3B82F6; }
+[data-theme="light"] .form-input {
+  background: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+[data-theme="light"] .form-input:focus { border-color: #3B82F6 !important; }
+[data-theme="light"] .form-label { color: #374151 !important; }
+[data-theme="light"] .section-title { color: #0F172A !important; }
+[data-theme="light"] .section-subtitle { color: #64748B !important; }
+[data-theme="light"] .nav-link { color: #374151 !important; }
+[data-theme="light"] .nav-link:hover { color: #3B82F6 !important; }
+[data-theme="light"] .tracking-step.done .step-circle { background: var(--success) !important; }
+[data-theme="light"] .tracking-step.current .step-circle {
+  background: var(--primary) !important;
+  box-shadow: 0 0 12px rgba(59,130,246,0.4) !important;
+}
+[data-theme="light"] .tracking-step .step-label { color: #374151 !important; }
+[data-theme="light"] .account-nav a { color: #374151 !important; }
+[data-theme="light"] .account-nav a:hover,
+[data-theme="light"] .account-nav a.active { background: #EFF6FF !important; color: #1D4ED8 !important; }
+[data-theme="light"] .stat-card {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+[data-theme="light"] .page-transition { background: transparent; }
+
+/* Light theme hero slider overlay tweak */
+[data-theme="light"] .hero-slide-content { text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+
 /* ── Base ───────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
 
