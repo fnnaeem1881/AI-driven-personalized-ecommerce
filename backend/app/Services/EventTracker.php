@@ -25,8 +25,8 @@ class EventTracker
             // Push to Redis queue
             Redis::rpush('events:queue', json_encode($event));
             
-        } catch (\Exception $e) {
-            Log::error('Event tracking failed: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::warning('Event tracking failed: ' . $e->getMessage());
         }
     }
 }

@@ -60,3 +60,4 @@ backend/.vscode/
 *.swo
 .idea/
 .vscode/
+.claude
