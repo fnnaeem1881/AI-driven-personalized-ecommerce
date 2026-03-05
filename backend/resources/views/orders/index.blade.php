@@ -31,7 +31,7 @@
                 </div>
                 <div>
                     <div style="font-size:0.75rem;color:#64748B;margin-bottom:0.25rem;">Total</div>
-                    <div style="font-size:1rem;font-weight:800;color:#F1F5F9;">${{ number_format($order->total, 2) }}</div>
+                    <div style="font-size:1rem;font-weight:800;color:#F1F5F9;">{{ format_currency($order->total) }}</div>
                 </div>
                 <div>
                     @php

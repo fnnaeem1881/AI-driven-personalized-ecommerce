@@ -88,17 +88,17 @@
                 <div style="flex:1;">
                     <div style="font-size:0.8rem;font-weight:600;color:#F1F5F9;line-height:1.3;">{{ Str::limit($item->name, 35) }}</div>
                 </div>
-                <span style="font-size:0.875rem;font-weight:700;color:#F1F5F9;">${{ number_format($item->price * $item->quantity, 2) }}</span>
+                <span style="font-size:0.875rem;font-weight:700;color:#F1F5F9;">{{ format_currency($item->price * $item->quantity) }}</span>
             </div>
             @endforeach
 
             <div style="padding-top:1rem;display:flex;flex-direction:column;gap:0.5rem;">
-                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Subtotal</span><span style="color:#F1F5F9;">${{ number_format($subtotal, 2) }}</span></div>
-                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Shipping</span><span style="color:{{ $shipping == 0 ? '#10B981' : '#F1F5F9' }};">{{ $shipping == 0 ? 'FREE' : '$'.number_format($shipping,2) }}</span></div>
-                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Tax</span><span style="color:#F1F5F9;">${{ number_format($tax, 2) }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Subtotal</span><span style="color:#F1F5F9;">{{ format_currency($subtotal) }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Shipping</span><span style="color:{{ $shipping == 0 ? '#10B981' : '#F1F5F9' }};">{{ $shipping == 0 ? 'FREE' : format_currency($shipping) }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Tax</span><span style="color:#F1F5F9;">{{ format_currency($tax) }}</span></div>
                 <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800;padding-top:0.75rem;border-top:1px solid var(--border);">
                     <span style="color:#F1F5F9;">Total</span>
-                    <span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${{ number_format($total, 2) }}</span>
+                    <span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ format_currency($total) }}</span>
                 </div>
             </div>
         </div>

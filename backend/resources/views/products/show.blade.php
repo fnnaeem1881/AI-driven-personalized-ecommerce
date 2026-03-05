@@ -68,10 +68,10 @@
 
             {{-- Price --}}
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding:1.25rem;background:var(--bg-elevated);border-radius:14px;border:1px solid var(--border);">
-                <span style="font-size:2.5rem;font-weight:900;background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${{ number_format($product->price, 2) }}</span>
+                <span style="font-size:2.5rem;font-weight:900;background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ format_currency($product->price) }}</span>
                 @if($product->compare_price)
                 <div>
-                    <span style="font-size:1rem;color:#64748B;text-decoration:line-through;display:block;">${{ number_format($product->compare_price, 2) }}</span>
+                    <span style="font-size:1rem;color:#64748B;text-decoration:line-through;display:block;">{{ format_currency($product->compare_price) }}</span>
                     <span class="badge badge-red">Save {{ $product->discount_percent }}%</span>
                 </div>
                 @endif

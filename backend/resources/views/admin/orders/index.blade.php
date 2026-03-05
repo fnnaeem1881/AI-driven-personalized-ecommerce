@@ -69,7 +69,7 @@
                     </td>
                     <td class="px-5 py-3 text-gray-500 text-xs">{{ $order->created_at->format('d M Y, H:i') }}</td>
                     <td class="px-5 py-3 text-center text-gray-600">{{ $order->items->count() }}</td>
-                    <td class="px-5 py-3 text-right font-semibold text-gray-800">${{ number_format($order->total, 2) }}</td>
+                    <td class="px-5 py-3 text-right font-semibold text-gray-800">{{ format_currency($order->total) }}</td>
                     <td class="px-5 py-3"><span class="badge {{ $cls }}">{{ ucfirst($order->status) }}</span></td>
                     <td class="px-5 py-3 text-center">
                         <a href="{{ route('admin.orders.show', $order) }}" class="btn-secondary text-xs py-1 px-3">View</a>

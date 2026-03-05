@@ -37,7 +37,7 @@
                 <div style="font-size:0.7rem;color:#64748B;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">{{ $item->product->brand }}</div>
                 <h3 style="font-size:0.875rem;font-weight:600;color:#F1F5F9;margin-bottom:0.75rem;">{{ Str::limit($item->product->name, 45) }}</h3>
                 <div style="display:flex;align-items:center;gap:0.625rem;margin-bottom:0.875rem;">
-                    <span style="font-size:1rem;font-weight:800;color:#3B82F6;">${{ number_format($item->product->price, 2) }}</span>
+                    <span style="font-size:1rem;font-weight:800;color:#3B82F6;">{{ format_currency($item->product->price) }}</span>
                 </div>
                 <button data-add-cart="{{ $item->product->id }}" data-qty="1" class="btn-primary" style="width:100%;justify-content:center;font-size:0.8rem;padding:0.5rem;">
                     🛒 Add to Cart

@@ -64,11 +64,11 @@
             <span style="font-size:0.7rem;color:#64748B;">({{ $product->reviews_count }})</span>
         </div>
 
-        {{-- Price --}}
+        {{-- Price (BDT) --}}
         <div style="display:flex;align-items:center;gap:0.625rem;">
-            <span style="font-size:1.1rem;font-weight:800;color:#3B82F6;">${{ number_format($product->price, 2) }}</span>
+            <span style="font-size:1.1rem;font-weight:800;color:#3B82F6;">{{ format_currency($product->price) }}</span>
             @if($product->compare_price)
-                <span style="font-size:0.8rem;color:#64748B;text-decoration:line-through;">${{ number_format($product->compare_price, 2) }}</span>
+                <span style="font-size:0.8rem;color:#64748B;text-decoration:line-through;">{{ format_currency($product->compare_price) }}</span>
             @endif
         </div>
     </div>

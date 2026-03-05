@@ -12,7 +12,7 @@
             <span class="text-2xl">💰</span>
             <span class="badge badge-green">Revenue</span>
         </div>
-        <div class="text-2xl font-bold text-gray-900">${{ number_format($stats['total_revenue'], 2) }}</div>
+        <div class="text-2xl font-bold text-gray-900">{{ format_currency($stats['total_revenue']) }}</div>
         <div class="text-xs text-gray-400 mt-1">Total paid orders</div>
     </div>
     <div class="stat-card">
@@ -69,7 +69,7 @@
                         </td>
                         <td class="px-5 py-3 text-gray-700">{{ $order->user?->name ?? 'Guest' }}</td>
                         <td class="px-5 py-3 text-gray-500">{{ $order->items->count() }} item(s)</td>
-                        <td class="px-5 py-3 text-right font-semibold text-gray-800">${{ number_format($order->total, 2) }}</td>
+                        <td class="px-5 py-3 text-right font-semibold text-gray-800">{{ format_currency($order->total) }}</td>
                         <td class="px-5 py-3">
                             @php
                                 $cls = match($order->status) {
@@ -128,7 +128,7 @@
                         <div class="text-sm font-medium text-gray-800 truncate">{{ $p->product_name }}</div>
                         <div class="text-xs text-gray-400">{{ $p->units }} units sold</div>
                     </div>
-                    <div class="text-sm font-semibold text-gray-800">${{ number_format($p->revenue, 0) }}</div>
+                    <div class="text-sm font-semibold text-gray-800">{{ format_currency($p->revenue) }}</div>
                 </div>
                 @empty
                 <p class="text-sm text-gray-400 text-center py-2">No sales yet</p>

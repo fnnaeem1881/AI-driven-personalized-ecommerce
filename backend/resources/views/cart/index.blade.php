@@ -37,7 +37,7 @@
                 <div style="flex:1;">
                     <div style="font-size:0.7rem;color:#64748B;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">{{ $item->attributes->brand ?? '' }}</div>
                     <h3 style="font-size:0.9rem;font-weight:700;color:#F1F5F9;margin-bottom:0.5rem;">{{ $item->name }}</h3>
-                    <span style="font-size:1rem;font-weight:800;color:#3B82F6;">${{ number_format($item->price, 2) }}</span>
+                    <span style="font-size:1rem;font-weight:800;color:#3B82F6;">{{ format_currency($item->price) }}</span>
                 </div>
 
                 {{-- Quantity --}}
@@ -58,7 +58,7 @@
                 </div>
 
                 <div style="text-align:right;min-width:80px;">
-                    <div style="font-size:1.1rem;font-weight:800;color:#F1F5F9;">${{ number_format($item->price * $item->quantity, 2) }}</div>
+                    <div style="font-size:1.1rem;font-weight:800;color:#F1F5F9;">{{ format_currency($item->price * $item->quantity) }}</div>
                     <form method="POST" action="{{ route('cart.remove') }}" style="margin-top:0.5rem;">
                         @csrf
                         <input type="hidden" name="rowId" value="{{ $item->rowId }}">
@@ -83,30 +83,31 @@
 
             <div style="display:flex;flex-direction:column;gap:0.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
                 <div style="display:flex;justify-content:space-between;font-size:0.875rem;">
-                    <span style="color:#64748B;">Subtotal</span><span style="color:#F1F5F9;font-weight:600;">${{ number_format($subtotal, 2) }}</span>
+                    <span style="color:#64748B;">Subtotal</span><span style="color:#F1F5F9;font-weight:600;">{{ format_currency($subtotal) }}</span>
                 </div>
+                @php $freeShipThreshold = (float) store_setting('free_shipping_threshold', 1000); $shipCost = (float) store_setting('shipping_cost', 60); @endphp
                 <div style="display:flex;justify-content:space-between;font-size:0.875rem;">
                     <span style="color:#64748B;">Shipping</span>
-                    <span style="color:{{ $subtotal >= 50 ? '#10B981' : '#F1F5F9' }};font-weight:600;">
-                        {{ $subtotal >= 50 ? '🎉 FREE' : '$9.99' }}
+                    <span style="color:{{ $subtotal >= $freeShipThreshold ? '#10B981' : '#F1F5F9' }};font-weight:600;">
+                        {{ $subtotal >= $freeShipThreshold ? '🎉 FREE' : format_currency($shipCost) }}
                     </span>
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:0.875rem;">
                     <span style="color:#64748B;">Tax (8%)</span>
-                    <span style="color:#F1F5F9;font-weight:600;">${{ number_format($subtotal * 0.08, 2) }}</span>
+                    <span style="color:#F1F5F9;font-weight:600;">{{ format_currency($subtotal * 0.08) }}</span>
                 </div>
             </div>
 
             <div style="display:flex;justify-content:space-between;padding:1rem 0;border-bottom:1px solid var(--border);">
                 <span style="font-weight:700;color:#F1F5F9;">Total</span>
                 <span style="font-size:1.5rem;font-weight:900;background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-                    ${{ number_format($subtotal + ($subtotal >= 50 ? 0 : 9.99) + ($subtotal * 0.08), 2) }}
+                    {{ format_currency($subtotal + ($subtotal >= $freeShipThreshold ? 0 : $shipCost) + ($subtotal * 0.08)) }}
                 </span>
             </div>
 
-            @if($subtotal < 50)
+            @if($subtotal < $freeShipThreshold)
             <div style="background:rgba(59,130,246,0.08);border-radius:10px;padding:0.875rem;margin:0.875rem 0;font-size:0.8rem;color:#60A5FA;border:1px solid rgba(59,130,246,0.2);">
-                🚚 Add <strong>${{ number_format(50 - $subtotal, 2) }}</strong> more for FREE shipping!
+                🚚 Add <strong>{{ format_currency($freeShipThreshold - $subtotal) }}</strong> more for FREE shipping!
             </div>
             @endif
 

@@ -39,28 +39,28 @@
                                 <span class="font-medium text-gray-800">{{ $item->product_name }}</span>
                             </div>
                         </td>
-                        <td class="px-5 py-3 text-right text-gray-600">${{ number_format($item->price, 2) }}</td>
+                        <td class="px-5 py-3 text-right text-gray-600">{{ format_currency($item->price) }}</td>
                         <td class="px-5 py-3 text-center text-gray-600">{{ $item->quantity }}</td>
-                        <td class="px-5 py-3 text-right font-semibold text-gray-800">${{ number_format($item->total, 2) }}</td>
+                        <td class="px-5 py-3 text-right font-semibold text-gray-800">{{ format_currency($item->total) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
                 <tfoot class="border-t border-gray-200">
                     <tr class="bg-gray-50">
                         <td colspan="3" class="px-5 py-3 text-right text-gray-600">Subtotal</td>
-                        <td class="px-5 py-3 text-right font-semibold">${{ number_format($order->subtotal, 2) }}</td>
+                        <td class="px-5 py-3 text-right font-semibold">{{ format_currency($order->subtotal) }}</td>
                     </tr>
                     <tr class="bg-gray-50">
                         <td colspan="3" class="px-5 py-3 text-right text-gray-600">Shipping</td>
-                        <td class="px-5 py-3 text-right font-semibold">${{ number_format($order->shipping, 2) }}</td>
+                        <td class="px-5 py-3 text-right font-semibold">{{ format_currency($order->shipping) }}</td>
                     </tr>
                     <tr class="bg-gray-50">
                         <td colspan="3" class="px-5 py-3 text-right text-gray-600">Tax</td>
-                        <td class="px-5 py-3 text-right font-semibold">${{ number_format($order->tax, 2) }}</td>
+                        <td class="px-5 py-3 text-right font-semibold">{{ format_currency($order->tax) }}</td>
                     </tr>
                     <tr>
                         <td colspan="3" class="px-5 py-3 text-right font-bold text-gray-900">Total</td>
-                        <td class="px-5 py-3 text-right font-bold text-blue-600 text-lg">${{ number_format($order->total, 2) }}</td>
+                        <td class="px-5 py-3 text-right font-bold text-blue-600 text-lg">{{ format_currency($order->total) }}</td>
                     </tr>
                 </tfoot>
             </table>

@@ -31,7 +31,7 @@
             </div>
             <div>
                 <div style="font-size:0.75rem;color:#64748B;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Total</div>
-                <div style="font-size:1rem;font-weight:700;color:#10B981;">${{ number_format($order->total, 2) }}</div>
+                <div style="font-size:1rem;font-weight:700;color:#10B981;">{{ format_currency($order->total) }}</div>
             </div>
         </div>
 
@@ -43,7 +43,7 @@
                 <div style="font-size:0.85rem;font-weight:600;color:#F1F5F9;">{{ $item->product_name }}</div>
                 <div style="font-size:0.75rem;color:#64748B;">Qty: {{ $item->quantity }}</div>
             </div>
-            <span style="font-size:0.875rem;font-weight:700;color:#F1F5F9;">${{ number_format($item->total, 2) }}</span>
+            <span style="font-size:0.875rem;font-weight:700;color:#F1F5F9;">{{ format_currency($item->total) }}</span>
         </div>
         @endforeach
     </div>

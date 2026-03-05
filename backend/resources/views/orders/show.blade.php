@@ -50,9 +50,9 @@
                 <img src="{{ $item->product_image }}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
                 <div style="flex:1;">
                     <div style="font-size:0.9rem;font-weight:600;color:#F1F5F9;margin-bottom:0.25rem;">{{ $item->product_name }}</div>
-                    <div style="font-size:0.8rem;color:#64748B;">Qty: {{ $item->quantity }} × ${{ number_format($item->price, 2) }}</div>
+                    <div style="font-size:0.8rem;color:#64748B;">Qty: {{ $item->quantity }} × {{ format_currency($item->price) }}</div>
                 </div>
-                <div style="font-size:0.9rem;font-weight:700;color:#F1F5F9;">${{ number_format($item->total, 2) }}</div>
+                <div style="font-size:0.9rem;font-weight:700;color:#F1F5F9;">{{ format_currency($item->total) }}</div>
             </div>
             @endforeach
         </div>
@@ -62,10 +62,10 @@
             {{-- Price Summary --}}
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;">
                 <h4 style="font-size:0.875rem;font-weight:700;color:#F1F5F9;margin-bottom:1rem;">Order Summary</h4>
-                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.5rem;"><span style="color:#64748B;">Subtotal</span><span style="color:#F1F5F9;">${{ number_format($order->subtotal, 2) }}</span></div>
-                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.5rem;"><span style="color:#64748B;">Shipping</span><span style="color:{{ $order->shipping == 0 ? '#10B981' : '#F1F5F9' }};">{{ $order->shipping == 0 ? 'FREE' : '$'.number_format($order->shipping,2) }}</span></div>
-                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.875rem;padding-bottom:0.875rem;border-bottom:1px solid var(--border);"><span style="color:#64748B;">Tax</span><span style="color:#F1F5F9;">${{ number_format($order->tax, 2) }}</span></div>
-                <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800;"><span style="color:#F1F5F9;">Total</span><span style="color:#3B82F6;">${{ number_format($order->total, 2) }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.5rem;"><span style="color:#64748B;">Subtotal</span><span style="color:#F1F5F9;">{{ format_currency($order->subtotal) }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.5rem;"><span style="color:#64748B;">Shipping</span><span style="color:{{ $order->shipping == 0 ? '#10B981' : '#F1F5F9' }};">{{ $order->shipping == 0 ? 'FREE' : format_currency($order->shipping) }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.875rem;padding-bottom:0.875rem;border-bottom:1px solid var(--border);"><span style="color:#64748B;">Tax</span><span style="color:#F1F5F9;">{{ format_currency($order->tax) }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800;"><span style="color:#F1F5F9;">Total</span><span style="color:#3B82F6;">{{ format_currency($order->total) }}</span></div>
             </div>
 
             {{-- Shipping Address --}}

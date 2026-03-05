@@ -97,21 +97,24 @@
         </div>
     </nav>
 
-    {{-- User info --}}
+    {{-- User info + Profile link --}}
     <div class="p-4 border-t border-gray-100 bg-gray-50">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+        <a href="{{ route('admin.profile') }}"
+           class="flex items-center gap-3 group hover:bg-white rounded-lg px-2 py-1.5 -mx-2 transition-colors mb-2">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
             </div>
             <div class="flex-1 min-w-0">
-                <div class="text-sm font-semibold text-gray-800 truncate">{{ auth()->user()->name }}</div>
-                <div class="text-xs text-purple-600 font-medium">Administrator</div>
+                <div class="text-sm font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors">{{ auth()->user()->name }}</div>
+                <div class="text-xs text-purple-500">Edit Profile →</div>
             </div>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" title="Logout" class="text-gray-400 hover:text-red-500 transition-colors text-lg">⏻</button>
-            </form>
-        </div>
+        </a>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="w-full text-left text-xs text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1.5 px-1 py-1">
+                <span>⏻</span> Sign Out
+            </button>
+        </form>
     </div>
 </aside>
 

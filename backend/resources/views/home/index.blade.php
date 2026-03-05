@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'TechNova — AI-Powered Electronics')
+@section('title', store_setting('store_name', 'TechNova') . ' — AI-Powered Electronics')
 
 @section('content')
 
@@ -32,16 +32,19 @@
         <div>
             <div class="swiper hero-swiper" style="border-radius:16px;overflow:hidden;">
                 <div class="swiper-wrapper">
-                    {{-- Slide 1 --}}
+                    {{-- Slide 1 — Dynamic from Settings --}}
                     <div class="swiper-slide">
                         <div class="hero-slide" style="min-height:420px;">
                             <div class="hero-slide-bg" style="background-image:url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=1200');"></div>
                             <div class="hero-slide-content">
-                                <span class="badge badge-blue" style="margin-bottom:0.75rem;align-self:flex-start;">🔥 New Arrival</span>
-                                <h1 style="font-size:2.5rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">MacBook Pro M3 Max<br><span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Most Powerful Mac Ever</span></h1>
-                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">18-hour battery. Liquid Retina XDR. M3 Max chip with 40-core GPU. Starting at $2,499.</p>
+                                <span class="badge badge-blue" style="margin-bottom:0.75rem;align-self:flex-start;">{{ store_setting('hero_badge', '🔥 New Arrival') }}</span>
+                                <h1 style="font-size:2.5rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">
+                                    {{ store_setting('hero_title', 'Next-Gen Tech') }}<br>
+                                    <span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ store_setting('hero_subtitle', 'At Your Fingertips') }}</span>
+                                </h1>
+                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">{{ store_setting('meta_description', 'Explore AI-curated electronics, gadgets & more. Fast delivery, easy returns.') }}</p>
                                 <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-                                    <a href="{{ route('category.show', 'laptops') }}" class="btn-primary">Shop Laptops</a>
+                                    <a href="{{ route('products.index') }}" class="btn-primary">{{ store_setting('hero_cta', 'Shop Now') }}</a>
                                     <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">Explore All</a>
                                 </div>
                             </div>
@@ -88,7 +91,7 @@
             {{-- Quick Banner Row --}}
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-top:0.75rem;">
                 @foreach([
-                    ['icon'=>'🚚','title'=>'Free Shipping','sub'=>'On orders over $50','color'=>'#3B82F6'],
+                    ['icon'=>'🚚','title'=>'Free Shipping','sub'=>'On orders over '.format_currency(store_setting('free_shipping_threshold', 1000)),'color'=>'#3B82F6'],
                     ['icon'=>'🔄','title'=>'Easy Returns','sub'=>'30-day no-hassle','color'=>'#8B5CF6'],
                     ['icon'=>'🔒','title'=>'Secure Pay','sub'=>'256-bit encryption','color'=>'#06B6D4'],
                 ] as $item)

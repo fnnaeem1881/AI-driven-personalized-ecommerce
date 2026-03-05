@@ -60,7 +60,7 @@
                         <div style="font-size:0.75rem;color:#64748B;">{{ $order->created_at->format('M d, Y') }} · {{ $order->items->count() }} item(s)</div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-size:0.875rem;font-weight:700;color:#F1F5F9;">${{ number_format($order->total, 2) }}</div>
+                        <div style="font-size:0.875rem;font-weight:700;color:#F1F5F9;">{{ format_currency($order->total) }}</div>
                         @php $colors = ['pending'=>'yellow','processing'=>'blue','shipped'=>'purple','delivered'=>'green','cancelled'=>'red']; @endphp
                         <span class="badge badge-{{ $colors[$order->status] ?? 'gray' }}" style="font-size:0.65rem;">{{ ucfirst($order->status) }}</span>
                     </div>

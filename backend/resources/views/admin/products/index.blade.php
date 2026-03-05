@@ -70,7 +70,7 @@
                     </td>
                     <td class="px-4 py-3 text-gray-600">{{ $product->category?->name ?? '—' }}</td>
                     <td class="px-4 py-3 text-gray-600">{{ $product->brand }}</td>
-                    <td class="px-4 py-3 text-right font-semibold text-gray-800">${{ number_format($product->price, 2) }}</td>
+                    <td class="px-4 py-3 text-right font-semibold text-gray-800">{{ format_currency($product->price) }}</td>
                     <td class="px-4 py-3 text-right">
                         <span class="{{ $product->stock < 10 ? 'text-red-600 font-semibold' : 'text-gray-600' }}">
                             {{ $product->stock }}

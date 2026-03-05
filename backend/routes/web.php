@@ -74,7 +74,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     // Users
     Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+    Route::get('users/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->name('users.create');
+    Route::post('users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
     Route::patch('users/{user}/role', [\App\Http\Controllers\Admin\UserController::class, 'updateRole'])->name('users.role');
+    Route::patch('users/{user}/spatie-role', [\App\Http\Controllers\Admin\UserController::class, 'assignSpatieRole'])->name('users.spatie-role');
+
+    // Admin Profile
+    Route::get('profile', [\App\Http\Controllers\Admin\AdminProfileController::class, 'index'])->name('profile');
+    Route::post('profile', [\App\Http\Controllers\Admin\AdminProfileController::class, 'update'])->name('profile.update');
+    Route::post('profile/password', [\App\Http\Controllers\Admin\AdminProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Settings
     Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings');
