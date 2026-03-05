@@ -77,7 +77,20 @@
             ⚙️ <span>Settings</span>
         </a>
 
+        {{-- Access Control --}}
         <div class="pt-3 mt-3 border-t border-gray-100">
+            <div class="px-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Access Control</div>
+            <a href="{{ route('admin.roles.index') }}"
+               class="sidebar-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}">
+                🛡️ <span>Roles</span>
+            </a>
+            <a href="{{ route('admin.permissions.index') }}"
+               class="sidebar-link {{ request()->routeIs('admin.permissions*') ? 'active' : '' }}">
+                🔐 <span>Permissions</span>
+            </a>
+        </div>
+
+        <div class="pt-3 mt-2 border-t border-gray-100">
             <a href="{{ route('home') }}" class="sidebar-link text-blue-600">
                 🏪 <span>View Store</span>
             </a>
