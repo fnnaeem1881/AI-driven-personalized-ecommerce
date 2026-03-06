@@ -63,6 +63,55 @@ class UserController extends Controller
             ->with('success', "User \"{$user->name}\" created successfully.");
     }
 
+    /**
+     * Show full AI profile for a user in the admin panel.
+     */
+    public function show(User $user)
+    {
+        $user->loadCount('orders')->loadSum('orders', 'total');
+
+        $aiProfile           = [];
+        $recommendedProducts = collect();
+        $interactedProducts  = collect();
+
+        try {
+            $aiService = new \App\Services\AIService();
+            $aiProfile = $aiService->getUserProfile($user->id, 10);
+
+            // Load recommended products from MySQL using product IDs from AI
+            if (!empty($aiProfile['recommendations'])) {
+                $recIds = array_column($aiProfile['recommendations'], 'product_id');
+                $dbProds = \App\Models\Product::whereIn('id', $recIds)->with('category')->get()->keyBy('id');
+                foreach ($aiProfile['recommendations'] as $rec) {
+                    $pid = $rec['product_id'];
+                    if (isset($dbProds[$pid])) {
+                        $prod = clone $dbProds[$pid];
+                        $prod->ai_score = $rec['score'] ?? null;
+                        $recommendedProducts->push($prod);
+                    }
+                }
+            }
+
+            // Load interacted products from MySQL
+            if (!empty($aiProfile['top_interactions'])) {
+                $intIds = array_column($aiProfile['top_interactions'], 'product_id');
+                $dbInts = \App\Models\Product::whereIn('id', $intIds)->with('category')->get()->keyBy('id');
+                foreach ($aiProfile['top_interactions'] as $inter) {
+                    $pid = $inter['product_id'];
+                    if (isset($dbInts[$pid])) {
+                        $prod = clone $dbInts[$pid];
+                        $prod->interaction_score = $inter['interaction_score'];
+                        $interactedProducts->push($prod);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // AI service unavailable — show page with MySQL data only
+        }
+
+        return view('admin.users.show', compact('user', 'aiProfile', 'recommendedProducts', 'interactedProducts'));
+    }
+
     /** Toggle simple admin/user role flag */
     public function updateRole(Request $request, User $user)
     {

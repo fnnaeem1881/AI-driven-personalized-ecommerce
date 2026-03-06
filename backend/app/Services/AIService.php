@@ -79,4 +79,54 @@ class AIService
 
         return ['risk_level' => 'unknown', 'probability' => 0];
     }
+
+    /**
+     * Get full AI profile for a user (segment, recommendations, interactions, recent events).
+     * Used by admin panel user detail page.
+     */
+    public function getUserProfile(int $userId, int $limit = 10): array
+    {
+        try {
+            $response = Http::timeout(8)
+                ->get("{$this->baseUrl}/users/{$userId}/profile", ['limit' => $limit]);
+
+            if ($response->successful()) {
+                return $response->json() ?? [];
+            }
+        } catch (\Exception $e) {
+            Log::error('AI user profile error: ' . $e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
+     * Get health status of the AI service and its dependencies.
+     */
+    public function getHealth(): array
+    {
+        try {
+            $response = Http::timeout(3)->get("{$this->baseUrl}/health");
+            if ($response->successful()) {
+                return $response->json() ?? [];
+            }
+        } catch (\Exception $e) {}
+
+        return ['status' => 'down', 'services' => ['clickhouse' => false, 'redis' => false], 'models' => []];
+    }
+
+    /**
+     * Get AI model performance metrics.
+     */
+    public function getModelPerformance(): array
+    {
+        try {
+            $response = Http::timeout(3)->get("{$this->baseUrl}/analytics/model-performance");
+            if ($response->successful()) {
+                return $response->json() ?? [];
+            }
+        } catch (\Exception $e) {}
+
+        return [];
+    }
 }

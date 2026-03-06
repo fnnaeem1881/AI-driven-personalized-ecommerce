@@ -5,13 +5,18 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional, List
 import clickhouse_connect
 import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
+from sklearn.cluster import KMeans
 import joblib
 import redis
 import json
@@ -37,7 +42,6 @@ try:
         password="2Mi0VyELOs_IP",
         secure=True
     )
-    
     print(" ClickHouse connected")
 except Exception as e:
     print(f" ClickHouse connection failed: {e}")
@@ -680,6 +684,272 @@ def get_abandonment_recommendation(risk_level: str, cart_value: float):
 
 
 
+@app.get("/users/{user_id}/profile")
+async def get_user_ai_profile(user_id: int, limit: int = 10):
+    """
+    Full AI profile for a user — used by the admin panel.
+    Returns segment, recent events, top interactions, and recommendations.
+    """
+    result = {
+        "user_id": user_id,
+        "segment": None,
+        "event_summary": {},
+        "recent_events": [],
+        "top_interactions": [],
+        "recommendations": [],
+    }
+
+    # ── Segment ───────────────────────────────────────────────
+    if user_segments_df is not None and not user_segments_df.empty:
+        seg_row = user_segments_df[user_segments_df["user_id"] == user_id]
+        if not seg_row.empty:
+            seg_id = int(seg_row.iloc[0]["segment"])
+            seg_name = (segment_names or {}).get(seg_id, "Unknown")
+            result["segment"] = {"id": seg_id, "name": seg_name}
+
+    # ── Top Interactions ──────────────────────────────────────
+    if user_product_matrix_df is not None and not user_product_matrix_df.empty:
+        urows = user_product_matrix_df[user_product_matrix_df["user_id"] == user_id]
+        urows = urows.sort_values("interaction_score", ascending=False).head(limit)
+        result["top_interactions"] = [
+            {"product_id": int(r["product_id"]), "interaction_score": float(r["interaction_score"])}
+            for _, r in urows.iterrows()
+        ]
+
+    # ── Recent Events & Summary (from ClickHouse) ─────────────
+    if ch_client is not None:
+        try:
+            q = f"""
+                SELECT event_type, product_id, product_name, price, cart_total, timestamp
+                FROM events
+                WHERE user_id = {user_id}
+                ORDER BY timestamp DESC
+                LIMIT 30
+            """
+            ev_df = ch_client.query_df(q)
+            if not ev_df.empty:
+                result["event_summary"] = ev_df["event_type"].value_counts().to_dict()
+                for _, row in ev_df.iterrows():
+                    result["recent_events"].append({
+                        "event_type":   row["event_type"],
+                        "product_id":   int(row["product_id"]) if pd.notna(row.get("product_id")) else None,
+                        "product_name": str(row.get("product_name") or ""),
+                        "price":        float(row["price"]) if pd.notna(row.get("price")) else None,
+                        "timestamp":    str(row["timestamp"]),
+                    })
+        except Exception as e:
+            print(f"[WARN] User profile events query failed: {e}")
+
+    # ── Recommendations ───────────────────────────────────────
+    if user_product_matrix_df is not None and not user_product_matrix_df.empty:
+        try:
+            matrix = user_product_matrix_df.pivot_table(
+                index="user_id", columns="product_id", values="interaction_score", fill_value=0
+            )
+            if user_id in matrix.index:
+                user_vec = matrix.loc[user_id].values.reshape(1, -1)
+                sims     = cosine_similarity(user_vec, matrix.values)[0]
+                top_idx  = np.argsort(sims)[::-1][1:6]
+                seen     = set(matrix.columns[matrix.loc[user_id] > 0])
+                recs: dict = {}
+                for idx in top_idx:
+                    sim_user = matrix.index[idx]
+                    for pid, score in matrix.loc[sim_user].items():
+                        if score > 0 and pid not in seen:
+                            recs[pid] = recs.get(pid, 0.0) + score * sims[idx]
+                result["recommendations"] = [
+                    {"product_id": int(pid), "score": round(float(sc), 2)}
+                    for pid, sc in sorted(recs.items(), key=lambda x: -x[1])[:limit]
+                ]
+        except Exception as e:
+            print(f"[WARN] Collab recommendations for user {user_id}: {e}")
+
+    # Fallback to popular
+    if not result["recommendations"] and popular_products_df is not None:
+        result["recommendations"] = [
+            {"product_id": int(r["product_id"]), "score": float(r["popularity_score"]), "reason": "popular"}
+            for _, r in popular_products_df.head(limit).iterrows()
+        ]
+
+    return result
+
+
+@app.post("/train")
+async def trigger_training(background_tasks: BackgroundTasks):
+    """
+    Trigger in-process ML training using the live ClickHouse connection.
+    Runs in background; reload models into memory when done.
+    """
+    if ch_client is None:
+        raise HTTPException(503, "ClickHouse not connected — cannot train.")
+    background_tasks.add_task(_run_training_pipeline)
+    return {"status": "training_started", "message": "Training running in background. Poll /analytics/model-performance to see results."}
+
+
+def _run_training_pipeline():
+    """Full training pipeline executed inside the running service (shares ch_client)."""
+    global cart_model, cart_scaler, segment_model, segment_scaler
+    global segment_names, popular_products_df, user_product_matrix_df, user_segments_df
+
+    os.makedirs('models', exist_ok=True)
+    os.makedirs('data',   exist_ok=True)
+    print("\n[TRAIN] ===== Training pipeline started =====")
+
+    # ── 1. Cart Abandonment ──────────────────────────────────
+    try:
+        q = """
+            WITH sd AS (
+                SELECT session_id, user_id,
+                    COUNT(*) AS event_count,
+                    SUM(event_type='add_to_cart')  AS cart_adds,
+                    SUM(event_type='product_view') AS views,
+                    SUM(event_type='purchase')     AS purchases,
+                    MAX(cart_total)                AS cart_value,
+                    AVG(price)                     AS avg_price,
+                    MAX(price)                     AS max_price,
+                    dateDiff('second',MIN(timestamp),MAX(timestamp)) AS duration,
+                    toHour(MIN(timestamp))         AS start_hour,
+                    toDayOfWeek(MIN(timestamp))    AS day_of_week
+                FROM events
+                WHERE timestamp >= now() - INTERVAL 90 DAY
+                GROUP BY session_id, user_id
+            )
+            SELECT * FROM sd
+        """
+        df = ch_client.query_df(q)
+        print(f"[TRAIN] Cart model: {len(df)} sessions loaded")
+
+        if len(df) >= 20:
+            df['converted'] = (df['purchases'] > 0).astype(int)
+            feat = ['event_count','cart_adds','views','cart_value','avg_price','max_price','duration','start_hour','day_of_week']
+            X = df[feat].fillna(0)
+            y = df['converted']
+            if y.nunique() > 1:
+                Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+                sc = StandardScaler(); Xtr_s = sc.fit_transform(Xtr); Xte_s = sc.transform(Xte)
+                mdl = RandomForestClassifier(n_estimators=100, max_depth=10, min_samples_split=5, random_state=42, class_weight='balanced')
+                mdl.fit(Xtr_s, ytr)
+                acc = accuracy_score(yte, mdl.predict(Xte_s))
+                joblib.dump(mdl, 'models/cart_abandonment_model.pkl')
+                joblib.dump(sc,  'models/cart_abandonment_scaler.pkl')
+                cart_model, cart_scaler = mdl, sc
+                print(f"[TRAIN] Cart model accuracy: {acc:.2%} — saved.")
+            else:
+                print("[TRAIN] Cart model: only one class, skipping.")
+        else:
+            print(f"[TRAIN] Cart model: insufficient sessions ({len(df)}), skipping.")
+    except Exception as e:
+        print(f"[TRAIN] Cart model error: {e}")
+
+    # ── 2. User Segmentation ─────────────────────────────────
+    try:
+        q = """
+            SELECT user_id,
+                COUNT(DISTINCT session_id)                                     AS sessions,
+                COUNT(*)                                                       AS total_events,
+                SUM(event_type='purchase')                                     AS purchases,
+                SUM(event_type='add_to_cart')                                  AS cart_adds,
+                SUM(event_type='product_view')                                 AS views,
+                AVG(price)                                                     AS avg_price,
+                SUM(CASE WHEN event_type='purchase' THEN price ELSE 0 END)     AS total_spent,
+                MAX(timestamp)                                                 AS last_activity
+            FROM events
+            WHERE user_id IS NOT NULL
+              AND timestamp >= now() - INTERVAL 90 DAY
+            GROUP BY user_id
+        """
+        df = ch_client.query_df(q)
+        print(f"[TRAIN] Segmentation: {len(df)} users loaded")
+
+        if len(df) >= 5:
+            df['last_activity'] = pd.to_datetime(df['last_activity'], utc=True)
+            df['recency'] = (datetime.now(df['last_activity'].dt.tz) - df['last_activity']).dt.days
+            feat = ['sessions','total_events','purchases','cart_adds','views','avg_price','total_spent','recency']
+            X = df[feat].fillna(0)
+            sc = StandardScaler(); Xs = sc.fit_transform(X)
+            n_cl = max(2, min(5, len(df) // 3))
+            km = KMeans(n_clusters=n_cl, random_state=42, n_init=10)
+            df['segment'] = km.fit_predict(Xs)
+            ss = df.groupby('segment').agg({'sessions':'mean','purchases':'mean','total_spent':'mean','avg_price':'mean','recency':'mean'}).round(2)
+            gm = ss.mean()
+            snames = {}
+            for seg in ss.index:
+                p=ss.loc[seg,'purchases']; ts=ss.loc[seg,'total_spent']; r=ss.loc[seg,'recency']; s=ss.loc[seg,'sessions']
+                if   p  > gm['purchases']   * 1.5: snames[seg] = 'VIP Customers'
+                elif ts > gm['total_spent']:        snames[seg] = 'High Spenders'
+                elif r  > gm['recency']:            snames[seg] = 'At Risk'
+                elif s  > gm['sessions']:           snames[seg] = 'Frequent Browsers'
+                else:                               snames[seg] = 'Casual Shoppers'
+            joblib.dump(km,     'models/user_segmentation_model.pkl')
+            joblib.dump(sc,     'models/user_segmentation_scaler.pkl')
+            joblib.dump(snames, 'models/segment_names.pkl')
+            df[['user_id','segment']].to_csv('data/user_segments.csv', index=False)
+            segment_model, segment_scaler, segment_names = km, sc, snames
+            user_segments_df = df[['user_id','segment']]
+            print(f"[TRAIN] Segmentation: {n_cl} segments — {snames}")
+        else:
+            print(f"[TRAIN] Segmentation: not enough users ({len(df)}), skipping.")
+    except Exception as e:
+        print(f"[TRAIN] Segmentation error: {e}")
+
+    # ── 3. User-Product Matrix ───────────────────────────────
+    try:
+        q = """
+            SELECT user_id, product_id,
+                SUM(CASE WHEN event_type='purchase'     THEN 5
+                         WHEN event_type='add_to_cart'  THEN 3
+                         WHEN event_type='product_view' THEN 1
+                         ELSE 0 END) AS interaction_score
+            FROM events
+            WHERE user_id IS NOT NULL AND product_id IS NOT NULL
+              AND timestamp >= now() - INTERVAL 90 DAY
+            GROUP BY user_id, product_id
+            HAVING interaction_score > 0
+        """
+        df = ch_client.query_df(q)
+        if not df.empty:
+            df.to_csv('data/user_product_matrix.csv', index=False)
+            user_product_matrix_df = df
+            print(f"[TRAIN] Matrix: {len(df)} rows, {df['user_id'].nunique()} users, {df['product_id'].nunique()} products — saved.")
+        else:
+            print("[TRAIN] Matrix: no data.")
+    except Exception as e:
+        print(f"[TRAIN] Matrix error: {e}")
+
+    # ── 4. Popular Products ──────────────────────────────────
+    try:
+        q = """
+            SELECT product_id,
+                COUNT(DISTINCT user_id)                                        AS unique_users,
+                COUNT(DISTINCT session_id)                                     AS unique_sessions,
+                SUM(event_type='purchase')                                     AS purchases,
+                SUM(event_type='product_view')                                 AS views,
+                SUM(event_type='add_to_cart')                                  AS cart_adds,
+                AVG(price)                                                     AS avg_price,
+                SUM(CASE WHEN event_type='purchase' THEN price ELSE 0 END)     AS revenue
+            FROM events
+            WHERE product_id IS NOT NULL
+              AND timestamp >= now() - INTERVAL 30 DAY
+            GROUP BY product_id
+            ORDER BY purchases DESC, unique_users DESC
+            LIMIT 100
+        """
+        df = ch_client.query_df(q)
+        if not df.empty:
+            df['popularity_score'] = df['purchases']*5 + df['unique_users']*2 + df['cart_adds']*2 + df['views']
+            df = df.sort_values('popularity_score', ascending=False)
+            df.to_csv('data/popular_products.csv', index=False)
+            popular_products_df = df
+            print(f"[TRAIN] Popular products: {len(df)} products — saved.")
+            print(f"        Top 3: {df.head(3)[['product_id','purchases','revenue']].to_dict('records')}")
+        else:
+            print("[TRAIN] Popular products: no data.")
+    except Exception as e:
+        print(f"[TRAIN] Popular products error: {e}")
+
+    print("[TRAIN] ===== Training pipeline complete =====\n")
+
+
 @app.on_event("startup")
 async def startup_event():
     print("\n" + "="*60)
@@ -688,6 +958,7 @@ async def startup_event():
     print(f" API Documentation: http://localhost:8001/docs")
     print(f" Health Check: http://localhost:8001/health")
     print(f" Model Performance: http://localhost:8001/analytics/model-performance")
+    print(f" Train on real data: POST http://localhost:8001/train")
     print("="*60 + "\n")
 
 

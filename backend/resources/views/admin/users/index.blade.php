@@ -118,20 +118,25 @@
                     {{-- Joined --}}
                     <td class="px-5 py-3 text-gray-400 text-xs">{{ $user->created_at->format('d M Y') }}</td>
 
-                    {{-- Toggle role --}}
+                    {{-- Actions --}}
                     <td class="px-5 py-3 text-center">
-                        @if($user->id !== auth()->id())
-                        <form method="POST" action="{{ route('admin.users.role', $user) }}">
-                            @csrf @method('PATCH')
-                            <button type="submit"
-                                    class="btn-secondary text-xs py-1 px-3 {{ $user->role==='admin' ? 'text-red-600 border-red-200 hover:bg-red-50' : '' }}"
-                                    onclick="return confirm('Change role for {{ addslashes($user->name) }}?')">
-                                {{ $user->role==='admin' ? '↓ Demote' : '↑ Make Admin' }}
-                            </button>
-                        </form>
-                        @else
-                            <span class="text-gray-300 text-xs">—</span>
-                        @endif
+                        <div class="flex items-center justify-center gap-2 flex-wrap">
+                            <a href="{{ route('admin.users.show', $user) }}"
+                               class="btn-secondary text-xs py-1 px-2 text-blue-600 border-blue-100 hover:bg-blue-50"
+                               title="View AI Profile">
+                                🤖 AI Profile
+                            </a>
+                            @if($user->id !== auth()->id())
+                            <form method="POST" action="{{ route('admin.users.role', $user) }}">
+                                @csrf @method('PATCH')
+                                <button type="submit"
+                                        class="btn-secondary text-xs py-1 px-2 {{ $user->role==='admin' ? 'text-red-600 border-red-200 hover:bg-red-50' : '' }}"
+                                        onclick="return confirm('Change role for {{ addslashes($user->name) }}?')">
+                                    {{ $user->role==='admin' ? '↓ Demote' : '↑ Admin' }}
+                                </button>
+                            </form>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

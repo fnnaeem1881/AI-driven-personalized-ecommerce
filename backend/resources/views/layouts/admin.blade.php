@@ -138,6 +138,15 @@
             ⚙️ <span>Settings</span>
         </a>
 
+        {{-- AI & Analytics --}}
+        <div class="pt-3 mt-3 border-t border-gray-100">
+            <div class="px-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">AI & Analytics</div>
+            <a href="{{ route('admin.ai-health') }}"
+               class="sidebar-link {{ request()->routeIs('admin.ai-health') ? 'active' : '' }}">
+                🩺 <span>Services Health</span>
+            </a>
+        </div>
+
         {{-- Access Control --}}
         <div class="pt-3 mt-3 border-t border-gray-100">
             <div class="px-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Access Control</div>

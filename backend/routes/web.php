@@ -87,8 +87,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
     Route::get('users/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->name('users.create');
     Route::post('users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
+    Route::get('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('users.show');
     Route::patch('users/{user}/role', [\App\Http\Controllers\Admin\UserController::class, 'updateRole'])->name('users.role');
     Route::patch('users/{user}/spatie-role', [\App\Http\Controllers\Admin\UserController::class, 'assignSpatieRole'])->name('users.spatie-role');
+
+    // AI Services Health Dashboard + Retrain
+    Route::get('ai-health', [\App\Http\Controllers\Admin\AdminController::class, 'aiHealth'])->name('ai-health');
+    Route::post('ai-retrain', [\App\Http\Controllers\Admin\AdminController::class, 'aiRetrain'])->name('ai-retrain');
 
     // Admin Profile
     Route::get('profile', [\App\Http\Controllers\Admin\AdminProfileController::class, 'index'])->name('profile');
