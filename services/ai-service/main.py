@@ -1,3 +1,10 @@
+import sys
+import io
+# Force UTF-8 stdout on Windows to allow Unicode output
+if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
@@ -25,11 +32,12 @@ print(f" Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 # ClickHouse connection
 try:
     ch_client = clickhouse_connect.get_client(
-        host='syym5je3fm.asia-southeast1.gcp.clickhouse.cloud',
-        user='default',
-        password='oR0n3ljHAc_e7',
+        host="reiq2ms4gj.germanywestcentral.azure.clickhouse.cloud",
+        user="default",
+        password="2Mi0VyELOs_IP",
         secure=True
     )
+    
     print(" ClickHouse connected")
 except Exception as e:
     print(f" ClickHouse connection failed: {e}")

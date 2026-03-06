@@ -18,9 +18,9 @@ os.makedirs('data', exist_ok=True)
 # ClickHouse connection
 try:
     ch_client = clickhouse_connect.get_client(
-        host='syym5je3fm.asia-southeast1.gcp.clickhouse.cloud',
-        user='default',
-        password='oR0n3ljHAc_e7',
+        host="reiq2ms4gj.germanywestcentral.azure.clickhouse.cloud",
+        user="default",
+        password="2Mi0VyELOs_IP",
         secure=True
     )
     print(" ClickHouse connected")

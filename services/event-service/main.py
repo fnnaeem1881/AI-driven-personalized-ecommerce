@@ -1,3 +1,10 @@
+import sys
+import io
+# Force UTF-8 stdout on Windows to allow Unicode output
+if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -19,9 +26,9 @@ redis_client = redis.Redis(
 )
 
 ch_client = clickhouse_connect.get_client(
-    host="syym5je3fm.asia-southeast1.gcp.clickhouse.cloud",
+    host="reiq2ms4gj.germanywestcentral.azure.clickhouse.cloud",
     user="default",
-    password="oR0n3ljHAc_e7",
+    password="2Mi0VyELOs_IP",
     secure=True
 )
 
@@ -68,18 +75,22 @@ async def startup_event():
     asyncio.create_task(process_queue_worker())
 
 async def process_queue_worker():
-    print("🔄 Queue worker started")
+    print("[Queue] Worker started")
+    _redis_unavailable_logged = False
     while True:
         try:
             event_json = await asyncio.to_thread(redis_client.lpop, "events:queue")
             if event_json:
+                _redis_unavailable_logged = False
                 event_data = json.loads(event_json)
                 await store_event(Event(**event_data))
             else:
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.5)
         except Exception as e:
-            print(f"Queue worker error: {e}")
-            await asyncio.sleep(1)
+            if not _redis_unavailable_logged:
+                print(f"[Queue] Redis unavailable - events via direct POST only. ({e})")
+                _redis_unavailable_logged = True
+            await asyncio.sleep(5)  # backoff when Redis is down
 
 async def store_event(event: Event):
     try:
@@ -103,37 +114,15 @@ async def store_event(event: Event):
             event.user_agent[:500],
         ]
 
-        # Create a separate client instance for this thread
-        def insert_row():
-            client = clickhouse_connect.get_client(
-                host='syym5je3fm.asia-southeast1.gcp.clickhouse.cloud',
-                user='default',
-                password='oR0n3ljHAc_e7',
-                secure=True
-            )
-            client.insert(
-                "events",
-                [row],
-                column_names=[
-                    "event_id",
-                    "event_type",
-                    "user_id",
-                    "session_id",
-                    "timestamp",
-                    "product_id",
-                    "category_id",
-                    "price",
-                    "quantity",
-                    "cart_total",
-                    "product_name",
-                    "ip_address",
-                    "user_agent",
-                ]
-            )
+        # Reuse the global ch_client to avoid SSL issues creating new connections in threads
+        col_names = [
+            "event_id", "event_type", "user_id", "session_id", "timestamp",
+            "product_id", "category_id", "price", "quantity", "cart_total",
+            "product_name", "ip_address", "user_agent",
+        ]
+        ch_client.insert("events", [row], column_names=col_names)
 
-        await asyncio.to_thread(insert_row)
-
-        print(f"✓ Stored event: {event.event_type}")
+        print(f"[OK] Stored event: {event.event_type}")
 
     except Exception as e:
         print(f"Error storing event: {e}")
@@ -173,9 +162,18 @@ async def get_stats():
 
 @app.get("/health")
 async def health_check():
-    redis_ok = await asyncio.to_thread(redis_client.ping)
-    ch_ok = await asyncio.to_thread(ch_client.ping)
-    return {"status":"healthy","redis":redis_ok,"clickhouse":ch_ok}
+    redis_ok = False
+    ch_ok = False
+    try:
+        redis_ok = await asyncio.to_thread(redis_client.ping)
+    except Exception:
+        pass
+    try:
+        ch_ok = await asyncio.to_thread(ch_client.ping)
+    except Exception:
+        pass
+    status = "healthy" if ch_ok else "degraded"
+    return {"status": status, "redis": redis_ok, "clickhouse": ch_ok}
 
 # ------------------ Local Run ------------------
 if __name__ == "__main__":
