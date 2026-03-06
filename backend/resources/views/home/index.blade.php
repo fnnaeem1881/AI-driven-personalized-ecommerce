@@ -6,8 +6,8 @@
 {{-- ═══════════════════════════════════════════════════════════
      HERO SECTION — Category Sidebar + Hero Slider
 ════════════════════════════════════════════════════════════ --}}
-<section style="max-width:1280px;margin:0 auto;padding:1.5rem 1rem;">
-    <div style="display:grid;grid-template-columns:240px 1fr;gap:1.25rem;align-items:start;">
+<section class="hero-section">
+    <div class="hero-grid">
 
         {{-- LEFT: Category Sidebar --}}
         <div class="cat-sidebar hidden lg:block">
@@ -119,17 +119,17 @@
             </div>
 
             {{-- Quick Banner Row --}}
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-top:0.75rem;">
+            <div class="quick-banners">
                 @foreach([
-                    ['icon'=>'🚚','title'=>'Free Shipping','sub'=>'On orders over '.format_currency(store_setting('free_shipping_threshold', 1000)),'color'=>'#3B82F6'],
-                    ['icon'=>'🔄','title'=>'Easy Returns','sub'=>'30-day no-hassle','color'=>'#8B5CF6'],
-                    ['icon'=>'🔒','title'=>'Secure Pay','sub'=>'256-bit encryption','color'=>'#06B6D4'],
+                    ['icon'=>'🚚','title'=>'Free Shipping','sub'=>'On orders over '.format_currency(store_setting('free_shipping_threshold', 1000))],
+                    ['icon'=>'🔄','title'=>'Easy Returns','sub'=>'30-day no-hassle'],
+                    ['icon'=>'🔒','title'=>'Secure Pay','sub'=>'256-bit encryption'],
                 ] as $item)
-                <div style="background:rgba(13,21,38,0.8);border:1px solid rgba(59,130,246,0.12);border-radius:12px;padding:0.875rem;display:flex;align-items:center;gap:0.75rem;">
+                <div class="quick-banner-card">
                     <span style="font-size:1.4rem;">{{ $item['icon'] }}</span>
                     <div>
-                        <div style="font-size:0.8rem;font-weight:700;color:#F1F5F9;">{{ $item['title'] }}</div>
-                        <div style="font-size:0.7rem;color:#64748B;">{{ $item['sub'] }}</div>
+                        <div class="qb-title">{{ $item['title'] }}</div>
+                        <div class="qb-sub">{{ $item['sub'] }}</div>
                     </div>
                 </div>
                 @endforeach
@@ -141,14 +141,14 @@
 {{-- ═══════════════════════════════════════════════════════════
      FLASH SALE
 ════════════════════════════════════════════════════════════ --}}
-<section style="max-width:1280px;margin:0 auto;padding:0 1rem 2rem;">
-    <div style="background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(245,158,11,0.08));border:1px solid rgba(239,68,68,0.2);border-radius:20px;padding:1.5rem 2rem;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+<section class="section-container">
+    <div class="flash-sale-box">
+        <div class="flash-sale-header">
             <div style="display:flex;align-items:center;gap:1rem;">
                 <div style="font-size:1.5rem;">⚡</div>
                 <div>
-                    <h2 style="font-size:1.5rem;font-weight:900;color:#F1F5F9;">Flash Sale</h2>
-                    <p style="font-size:0.8rem;color:#64748B;">Limited time deals — grab them before they're gone!</p>
+                    <h2 class="flash-sale-title">{{ $activeDeal ? $activeDeal->title : 'Flash Sale' }}</h2>
+                    <p class="flash-sale-sub">{{ $activeDeal && $activeDeal->description ? $activeDeal->description : 'Limited time deals — grab them before they\'re gone!' }}</p>
                 </div>
             </div>
             {{-- Countdown --}}
@@ -174,21 +174,22 @@
     </div>
 </section>
 
+
 {{-- ═══════════════════════════════════════════════════════════
      AI RECOMMENDATIONS
 ════════════════════════════════════════════════════════════ --}}
-<section style="max-width:1280px;margin:0 auto;padding:0 1rem 2rem;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+<section class="section-container">
+    <div class="section-header">
         <div>
-            <div style="display:flex;align-items:center;gap:0.625rem;margin-bottom:0.25rem;">
-                <span style="font-size:1rem;">🤖</span>
-                <span style="font-size:0.75rem;font-weight:600;color:#3B82F6;text-transform:uppercase;letter-spacing:0.08em;">AI Powered</span>
+            <div class="section-badge">
+                <span>🤖</span>
+                <span>AI Powered</span>
             </div>
             <h2 class="section-title">Recommended For You</h2>
         </div>
         <a href="{{ route('products.index') }}" class="btn-ghost">See All →</a>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;">
+    <div class="products-grid">
         @foreach($recommendations->take(8) as $product)
             <x-product-card :product="$product" />
         @endforeach
@@ -198,26 +199,22 @@
 {{-- ═══════════════════════════════════════════════════════════
      CATEGORY SHOWCASE
 ════════════════════════════════════════════════════════════ --}}
-<section style="max-width:1280px;margin:0 auto;padding:0 1rem 2rem;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+<section class="section-container">
+    <div class="section-header">
         <h2 class="section-title">Shop by Category</h2>
         <a href="{{ route('products.index') }}" class="btn-ghost">View All →</a>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
+    <div class="cat-showcase-grid">
         @foreach($categories->take(8) as $cat)
-        <a href="{{ route('category.show', $cat->slug) }}"
-           style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden;text-decoration:none;transition:all 0.3s;display:block;aspect-ratio:1;"
-           onmouseover="this.style.borderColor='rgba(59,130,246,0.4)';this.style.transform='translateY(-4px)'"
-           onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
-            <div style="position:relative;height:70%;overflow:hidden;">
-                <img src="{{ $cat->image }}" alt="{{ $cat->name }}" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.5);transition:transform 0.5s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
-                <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,11,20,1) 0%,transparent 60%);">
-                </div>
-                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.5rem;">{{ $cat->icon }}</div>
+        <a href="{{ route('category.show', $cat->slug) }}" class="cat-showcase-card">
+            <div class="cat-showcase-img-wrap">
+                <img src="{{ $cat->image }}" alt="{{ $cat->name }}" class="cat-showcase-img">
+                <div class="cat-showcase-overlay"></div>
+                <div class="cat-showcase-icon">{{ $cat->icon }}</div>
             </div>
-            <div style="padding:0.875rem;border-top:1px solid var(--border);">
-                <h3 style="font-size:0.9rem;font-weight:700;color:#F1F5F9;">{{ $cat->name }}</h3>
-                <p style="font-size:0.75rem;color:#3B82F6;margin-top:0.25rem;">Shop Now →</p>
+            <div class="cat-showcase-info">
+                <h3 class="cat-showcase-name">{{ $cat->name }}</h3>
+                <p class="cat-showcase-cta">Shop Now →</p>
             </div>
         </a>
         @endforeach
@@ -227,15 +224,15 @@
 {{-- ═══════════════════════════════════════════════════════════
      FEATURED PRODUCTS
 ════════════════════════════════════════════════════════════ --}}
-<section style="max-width:1280px;margin:0 auto;padding:0 1rem 2rem;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+<section class="section-container">
+    <div class="section-header">
         <div>
             <h2 class="section-title">⭐ Featured Products</h2>
-            <p style="font-size:0.875rem;color:#64748B;margin-top:0.25rem;">Handpicked by our team — top quality, best value</p>
+            <p class="section-sub">Handpicked by our team — top quality, best value</p>
         </div>
         <a href="{{ route('products.index') }}" class="btn-ghost">See All →</a>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;">
+    <div class="products-grid">
         @foreach($featured as $product)
             <x-product-card :product="$product" />
         @endforeach
@@ -245,11 +242,11 @@
 {{-- ═══════════════════════════════════════════════════════════
      TRENDING PRODUCTS
 ════════════════════════════════════════════════════════════ --}}
-<section style="max-width:1280px;margin:0 auto;padding:0 1rem 2rem;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+<section class="section-container">
+    <div class="section-header">
         <div>
             <h2 class="section-title">🔥 Trending Now</h2>
-            <p style="font-size:0.875rem;color:#64748B;margin-top:0.25rem;">Most loved products this week</p>
+            <p class="section-sub">Most loved products this week</p>
         </div>
         <a href="{{ route('products.index') }}" class="btn-ghost">See All →</a>
     </div>
@@ -267,12 +264,12 @@
 {{-- ═══════════════════════════════════════════════════════════
      NEW ARRIVALS
 ════════════════════════════════════════════════════════════ --}}
-<section style="max-width:1280px;margin:0 auto;padding:0 1rem 2rem;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+<section class="section-container">
+    <div class="section-header">
         <h2 class="section-title">🆕 New Arrivals</h2>
         <a href="{{ route('products.index') }}" class="btn-ghost">See All →</a>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;">
+    <div class="products-grid">
         @foreach($newArrivals->take(8) as $product)
             <x-product-card :product="$product" />
         @endforeach
@@ -282,12 +279,12 @@
 {{-- ═══════════════════════════════════════════════════════════
      BRANDS BANNER
 ════════════════════════════════════════════════════════════ --}}
-<section style="max-width:1280px;margin:0 auto;padding:0 1rem 2rem;">
-    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2rem;">
-        <h3 style="text-align:center;font-size:0.8rem;color:#64748B;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1.5rem;">Trusted Brands</h3>
-        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:2.5rem;align-items:center;">
+<section class="section-container">
+    <div class="brands-box">
+        <h3 class="brands-label">Trusted Brands</h3>
+        <div class="brands-row">
             @foreach(['Apple','Samsung','Sony','Google','Microsoft','ASUS','Dell','Razer','Logitech','Bose'] as $brand)
-            <span style="font-size:1rem;font-weight:700;color:#374151;letter-spacing:0.05em;transition:color 0.2s;cursor:default;" onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color='#374151'">{{ $brand }}</span>
+            <span class="brand-name">{{ $brand }}</span>
             @endforeach
         </div>
     </div>
@@ -296,19 +293,19 @@
 {{-- ═══════════════════════════════════════════════════════════
      NEWSLETTER
 ════════════════════════════════════════════════════════════ --}}
-<section style="max-width:1280px;margin:0 auto;padding:0 1rem 2rem;">
-    <div style="background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(59,130,246,0.2);border-radius:24px;padding:3rem 2rem;text-align:center;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(59,130,246,0.1),transparent 70%);"></div>
-        <div style="position:absolute;bottom:-50px;left:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(139,92,246,0.1),transparent 70%);"></div>
+<section class="section-container">
+    <div class="newsletter-box">
+        <div class="newsletter-glow newsletter-glow-tr"></div>
+        <div class="newsletter-glow newsletter-glow-bl"></div>
         <div style="position:relative;z-index:1;">
             <span style="font-size:2rem;">📧</span>
-            <h2 style="font-size:2rem;font-weight:900;color:#F1F5F9;margin:0.75rem 0 0.5rem;">Stay in the Loop</h2>
-            <p style="color:#64748B;font-size:1rem;margin-bottom:2rem;">Get exclusive deals, new product alerts, and AI-curated picks delivered to your inbox.</p>
-            <form style="display:flex;max-width:480px;margin:0 auto;gap:0.75rem;" onsubmit="this.querySelector('button').textContent='✓ Subscribed!';event.preventDefault();">
-                <input type="email" placeholder="your@email.com" class="form-input" style="flex:1;" required>
+            <h2 class="newsletter-title">Stay in the Loop</h2>
+            <p class="newsletter-sub">Get exclusive deals, new product alerts, and AI-curated picks delivered to your inbox.</p>
+            <form class="newsletter-form" onsubmit="this.querySelector('button').textContent='✓ Subscribed!';event.preventDefault();">
+                <input type="email" placeholder="your@email.com" class="form-input newsletter-input" required>
                 <button type="submit" class="btn-primary" style="white-space:nowrap;">Subscribe</button>
             </form>
-            <p style="font-size:0.75rem;color:#374151;margin-top:0.875rem;">No spam, unsubscribe anytime. We respect your privacy.</p>
+            <p class="newsletter-note">No spam, unsubscribe anytime. We respect your privacy.</p>
         </div>
     </div>
 </section>

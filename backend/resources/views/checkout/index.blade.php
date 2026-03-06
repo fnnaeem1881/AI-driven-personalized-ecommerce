@@ -30,7 +30,7 @@
 
             {{-- Shipping Address --}}
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:1.75rem;margin-bottom:1.25rem;">
-                <h3 style="font-size:1rem;font-weight:700;color:#F1F5F9;margin-bottom:1.25rem;">📦 Shipping Address</h3>
+                <h3 style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:1.25rem;">📦 Shipping Address</h3>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                     <div><label class="form-label">First Name</label><input name="first_name" class="form-input" required value="{{ auth()->user()->name ? explode(' ', auth()->user()->name)[0] : '' }}"></div>
                     <div><label class="form-label">Last Name</label><input name="last_name" class="form-input" required value="{{ auth()->user()->name && str_contains(auth()->user()->name,' ') ? explode(' ', auth()->user()->name, 2)[1] : '' }}"></div>
@@ -52,7 +52,7 @@
 
             {{-- Payment --}}
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:1.75rem;margin-bottom:1.25rem;" x-data="{ payment: 'cod' }">
-                <h3 style="font-size:1rem;font-weight:700;color:#F1F5F9;margin-bottom:1.25rem;">💳 Payment Method</h3>
+                <h3 style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:1.25rem;">💳 Payment Method</h3>
                 <div style="display:flex;flex-direction:column;gap:0.75rem;">
                     @foreach([['cod','💰','Cash on Delivery','Pay when your order arrives'],['card','💳','Credit / Debit Card','Visa, Mastercard, Amex — coming soon']] as [$val,$icon,$title,$sub])
                     <label style="display:flex;align-items:center;gap:1rem;padding:1rem;border-radius:12px;cursor:pointer;border:2px solid;"
@@ -60,7 +60,7 @@
                         <input type="radio" name="payment_method" value="{{ $val }}" x-model="payment" style="accent-color:#3B82F6;">
                         <span style="font-size:1.5rem;">{{ $icon }}</span>
                         <div>
-                            <div style="font-size:0.9rem;font-weight:700;color:#F1F5F9;">{{ $title }}</div>
+                            <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);">{{ $title }}</div>
                             <div style="font-size:0.75rem;color:#64748B;">{{ $sub }}</div>
                         </div>
                         <div style="margin-left:auto;" x-show="payment === '{{ $val }}'">
@@ -78,7 +78,7 @@
 
         {{-- Order Summary --}}
         <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;position:sticky;top:80px;">
-            <h3 style="font-size:1rem;font-weight:700;color:#F1F5F9;margin-bottom:1.25rem;">Your Order</h3>
+            <h3 style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:1.25rem;">Your Order</h3>
             @foreach($cartItems as $item)
             <div style="display:flex;gap:0.875rem;padding:0.75rem 0;border-bottom:1px solid var(--border);">
                 <div style="position:relative;">
@@ -86,18 +86,18 @@
                     <span style="position:absolute;top:-6px;right:-6px;background:#3B82F6;color:white;font-size:0.6rem;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">{{ $item->quantity }}</span>
                 </div>
                 <div style="flex:1;">
-                    <div style="font-size:0.8rem;font-weight:600;color:#F1F5F9;line-height:1.3;">{{ Str::limit($item->name, 35) }}</div>
+                    <div style="font-size:0.8rem;font-weight:600;color:var(--text-primary);line-height:1.3;">{{ Str::limit($item->name, 35) }}</div>
                 </div>
-                <span style="font-size:0.875rem;font-weight:700;color:#F1F5F9;">{{ format_currency($item->price * $item->quantity) }}</span>
+                <span style="font-size:0.875rem;font-weight:700;color:var(--text-primary);">{{ format_currency($item->price * $item->quantity) }}</span>
             </div>
             @endforeach
 
             <div style="padding-top:1rem;display:flex;flex-direction:column;gap:0.5rem;">
-                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Subtotal</span><span style="color:#F1F5F9;">{{ format_currency($subtotal) }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Subtotal</span><span style="color:var(--text-primary);">{{ format_currency($subtotal) }}</span></div>
                 <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Shipping</span><span style="color:{{ $shipping == 0 ? '#10B981' : '#F1F5F9' }};">{{ $shipping == 0 ? 'FREE' : format_currency($shipping) }}</span></div>
-                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Tax</span><span style="color:#F1F5F9;">{{ format_currency($tax) }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span style="color:#64748B;">Tax</span><span style="color:var(--text-primary);">{{ format_currency($tax) }}</span></div>
                 <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800;padding-top:0.75rem;border-top:1px solid var(--border);">
-                    <span style="color:#F1F5F9;">Total</span>
+                    <span style="color:var(--text-primary);">Total</span>
                     <span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ format_currency($total) }}</span>
                 </div>
             </div>

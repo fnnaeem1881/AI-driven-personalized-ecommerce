@@ -30,8 +30,8 @@
                 <textarea name="description" rows="3" class="form-input" placeholder="Brief description…">{{ old('description') }}</textarea>
             </div>
             <div class="form-group col-span-2">
-                <label class="form-label">Image URL</label>
-                <input type="url" name="image" value="{{ old('image') }}" class="form-input" placeholder="https://…">
+                <label class="form-label">Category Image</label>
+                <x-image-input name="image" :value="old('image', '')" />
             </div>
             <div class="form-group">
                 <label class="form-label">Parent Category</label>

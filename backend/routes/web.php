@@ -66,6 +66,7 @@ Route::get('/contact', fn() => view('support.contact'))->name('support.contact')
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    Route::post('upload-image', [\App\Http\Controllers\Admin\ImageUploadController::class, 'store'])->name('upload-image');
     Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
 
     // Products CRUD
@@ -102,6 +103,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     // Hero Slides
     Route::resource('slides', \App\Http\Controllers\Admin\HeroSlideController::class)->except(['show']);
+
+    // Flash Deals
+    Route::resource('flash-deals', \App\Http\Controllers\Admin\FlashDealController::class)->except(['show']);
 
     // Permissions
     Route::get('permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions.index');

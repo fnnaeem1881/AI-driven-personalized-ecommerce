@@ -9,7 +9,7 @@
         ✅
     </div>
 
-    <h1 style="font-size:2.25rem;font-weight:900;color:#F1F5F9;margin-bottom:0.5rem;">Order Confirmed!</h1>
+    <h1 style="font-size:2.25rem;font-weight:900;color:var(--text-primary);margin-bottom:0.5rem;">Order Confirmed!</h1>
     <p style="color:#64748B;font-size:1rem;margin-bottom:2rem;">
         Thank you for your order. We'll send you a confirmation email shortly.
     </p>
@@ -23,11 +23,11 @@
             </div>
             <div>
                 <div style="font-size:0.75rem;color:#64748B;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Est. Delivery</div>
-                <div style="font-size:1rem;font-weight:700;color:#F1F5F9;">{{ now()->addDays(5)->format('M d') }} – {{ now()->addDays(8)->format('M d, Y') }}</div>
+                <div style="font-size:1rem;font-weight:700;color:var(--text-primary);">{{ now()->addDays(5)->format('M d') }} – {{ now()->addDays(8)->format('M d, Y') }}</div>
             </div>
             <div>
                 <div style="font-size:0.75rem;color:#64748B;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Payment</div>
-                <div style="font-size:1rem;font-weight:700;color:#F1F5F9;">{{ strtoupper($order->payment_method) }}</div>
+                <div style="font-size:1rem;font-weight:700;color:var(--text-primary);">{{ strtoupper($order->payment_method) }}</div>
             </div>
             <div>
                 <div style="font-size:0.75rem;color:#64748B;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Total</div>
@@ -35,15 +35,15 @@
             </div>
         </div>
 
-        <h4 style="font-size:0.875rem;font-weight:700;color:#F1F5F9;margin-bottom:0.875rem;">Items Ordered</h4>
+        <h4 style="font-size:0.875rem;font-weight:700;color:var(--text-primary);margin-bottom:0.875rem;">Items Ordered</h4>
         @foreach($order->items as $item)
         <div style="display:flex;align-items:center;gap:0.875rem;padding:0.625rem 0;border-bottom:1px solid rgba(59,130,246,0.08);">
             <img src="{{ $item->product_image }}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">
             <div style="flex:1;">
-                <div style="font-size:0.85rem;font-weight:600;color:#F1F5F9;">{{ $item->product_name }}</div>
+                <div style="font-size:0.85rem;font-weight:600;color:var(--text-primary);">{{ $item->product_name }}</div>
                 <div style="font-size:0.75rem;color:#64748B;">Qty: {{ $item->quantity }}</div>
             </div>
-            <span style="font-size:0.875rem;font-weight:700;color:#F1F5F9;">{{ format_currency($item->total) }}</span>
+            <span style="font-size:0.875rem;font-weight:700;color:var(--text-primary);">{{ format_currency($item->total) }}</span>
         </div>
         @endforeach
     </div>

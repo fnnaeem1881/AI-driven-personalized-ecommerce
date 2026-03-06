@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\FlashDeal;
 use App\Models\HeroSlide;
 use App\Models\Product;
 use App\Services\AIService;
@@ -24,25 +25,13 @@ class HomeController extends Controller
         $trending = Product::where('is_active', true)
             ->orderByDesc('reviews_count')->limit(8)->get();
 
-        // Flash deals: DB-marked flash deals first, fallback to discounted products
-        $flashSale = Product::where('is_active', true)
-            ->where('is_flash_deal', true)
-            ->where(function ($q) {
-                $q->whereNull('flash_deal_ends_at')
-                  ->orWhere('flash_deal_ends_at', '>', now());
-            })
-            ->orderByDesc('rating')->limit(6)->get();
-
-        if ($flashSale->isEmpty()) {
-            $flashSale = Product::where('is_active', true)
-                ->whereNotNull('compare_price')
-                ->orderByDesc('rating')->limit(6)->get();
-        }
-
-        // Flash sale end time: earliest active deal end, or end of today
-        $flashSaleEnds = $flashSale->whereNotNull('flash_deal_ends_at')
-            ->min('flash_deal_ends_at');
-        $flashSaleEnds = $flashSaleEnds ? $flashSaleEnds->timestamp : now()->endOfDay()->timestamp;
+        // Flash deals: use active FlashDeal entity first, fallback to compare_price products
+        $activeDeal   = FlashDeal::active()->with(['products' => fn ($q) => $q->where('is_active', true)])->latest('starts_at')->first();
+        $flashSale    = $activeDeal && $activeDeal->products->count()
+            ? $activeDeal->products->take(6)
+            : Product::where('is_active', true)->whereNotNull('compare_price')->orderByDesc('rating')->limit(6)->get();
+        $flashSaleEnds = $activeDeal ? $activeDeal->ends_at->timestamp : now()->endOfDay()->timestamp;
+        $activeDealDiscount = $activeDeal?->discount_percent ?? 0;
 
         // AI recommendations for logged-in users
         $recommendations = collect();
@@ -63,7 +52,7 @@ class HomeController extends Controller
 
         return view('home.index', compact(
             'categories', 'heroSlides', 'featured', 'newArrivals', 'trending',
-            'flashSale', 'recommendations', 'flashSaleEnds'
+            'flashSale', 'recommendations', 'flashSaleEnds', 'activeDeal', 'activeDealDiscount'
         ));
     }
 }

@@ -54,7 +54,7 @@ class ProductController extends Controller
             'sku'               => 'required|string|unique:products,sku',
             'short_description' => 'required|string|max:500',
             'description'       => 'required|string',
-            'image'             => 'required|string|url',
+            'image'             => 'required|string',
             'rating'            => 'nullable|numeric|min:0|max:5',
             'is_featured'       => 'boolean',
             'is_active'         => 'boolean',
@@ -74,7 +74,19 @@ class ProductController extends Controller
         }
         $data['slug'] = $slug;
 
-        Product::create($data);
+        $product = Product::create($data);
+
+        // Handle extra images
+        if ($request->has('extra_images')) {
+            foreach (array_filter($request->input('extra_images', [])) as $idx => $imgUrl) {
+                if ($imgUrl) {
+                    $product->images()->create([
+                        'image_path' => $imgUrl,
+                        'sort_order' => $idx + 1,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product "' . $data['name'] . '" created successfully.');
@@ -103,20 +115,30 @@ class ProductController extends Controller
             'sku'                 => 'required|string|unique:products,sku,' . $product->id,
             'short_description'   => 'required|string|max:500',
             'description'         => 'required|string',
-            'image'               => 'required|string|url',
+            'image'               => 'required|string',
             'rating'              => 'nullable|numeric|min:0|max:5',
             'is_featured'         => 'boolean',
             'is_active'           => 'boolean',
-            'is_flash_deal'       => 'boolean',
-            'flash_deal_ends_at'  => 'nullable|date',
-            'flash_deal_discount' => 'nullable|integer|min:1|max:99',
         ]);
 
-        $data['is_featured']   = $request->boolean('is_featured');
-        $data['is_active']     = $request->boolean('is_active');
-        $data['is_flash_deal'] = $request->boolean('is_flash_deal');
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['is_active']   = $request->boolean('is_active');
 
         $product->update($data);
+
+        // Handle extra images - sync them
+        if ($request->has('extra_images')) {
+            // Delete existing and recreate
+            $product->images()->delete();
+            foreach (array_filter($request->input('extra_images', [])) as $idx => $imgUrl) {
+                if ($imgUrl) {
+                    $product->images()->create([
+                        'image_path' => $imgUrl,
+                        'sort_order' => $idx + 1,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product updated successfully.');

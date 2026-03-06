@@ -40,28 +40,20 @@
                     <span class="cart-item-price">{{ format_currency($item->price) }}</span>
                 </div>
 
-                {{-- Quantity Controls --}}
+                {{-- Quantity Controls (AJAX) --}}
                 <div class="qty-control">
-                    <form method="POST" action="{{ route('cart.update') }}">
-                        @csrf
-                        <input type="hidden" name="rowId" value="{{ $item->rowId }}">
-                        <input type="hidden" name="quantity" value="{{ max(1, $item->quantity - 1) }}">
-                        <button class="qty-btn">−</button>
-                    </form>
-                    <span class="qty-value">{{ $item->quantity }}</span>
-                    <form method="POST" action="{{ route('cart.update') }}">
-                        @csrf
-                        <input type="hidden" name="rowId" value="{{ $item->rowId }}">
-                        <input type="hidden" name="quantity" value="{{ $item->quantity + 1 }}">
-                        <button class="qty-btn">+</button>
-                    </form>
+                    <button type="button" class="qty-btn"
+                            onclick="cartQty('{{ $item->id }}', {{ max(1, $item->quantity - 1) }}, this)">−</button>
+                    <span class="qty-value" id="qv-{{ $item->id }}">{{ $item->quantity }}</span>
+                    <button type="button" class="qty-btn"
+                            onclick="cartQty('{{ $item->id }}', {{ $item->quantity + 1 }}, this)">+</button>
                 </div>
 
                 <div class="cart-item-total-col">
                     <div class="cart-item-total">{{ format_currency($item->price * $item->quantity) }}</div>
                     <form method="POST" action="{{ route('cart.remove') }}" style="margin-top:0.5rem;">
                         @csrf
-                        <input type="hidden" name="rowId" value="{{ $item->rowId }}">
+                        <input type="hidden" name="rowId" value="{{ $item->id }}">
                         <button type="submit" class="remove-btn">🗑 Remove</button>
                     </form>
                 </div>
@@ -352,5 +344,44 @@
 [data-theme="light"] .free-ship-nudge { color: #1D4ED8; background: rgba(59,130,246,0.06); }
 [data-theme="light"] .discount-heading { color: #7C3AED; }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+const CART_UPDATE_URL = '{{ route("cart.update") }}';
+const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+function cartQty(itemId, newQty, btn) {
+    if (newQty < 1) return;
+    // Optimistic update
+    const display = document.getElementById('qv-' + itemId);
+    if (display) display.textContent = newQty;
+    btn.disabled = true;
+
+    fetch(CART_UPDATE_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRF-TOKEN': CSRF_TOKEN,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: 'rowId=' + encodeURIComponent(itemId) + '&quantity=' + newQty
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if (data.success) {
+            const badge = document.querySelector('.cart-badge');
+            if (badge && data.cart_count !== undefined) badge.textContent = data.cart_count;
+            window.location.reload();
+        } else {
+            btn.disabled = false;
+        }
+    })
+    .catch(() => { btn.disabled = false; window.location.reload(); });
+}
+</script>
 @endpush
 @endsection

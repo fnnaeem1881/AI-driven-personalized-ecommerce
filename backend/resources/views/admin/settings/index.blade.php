@@ -55,41 +55,9 @@
                            class="form-input" placeholder="We'll be back soon!">
                 </div>
                 <div class="form-group mb-0 sm:col-span-2">
-                    <label class="form-label">Store Logo URL</label>
-                    <div class="flex gap-3 items-start">
-                        <div class="flex-1">
-                            <input type="url" name="logo_url" id="logo_url_input" value="{{ $v('logo_url') }}"
-                                   class="form-input" placeholder="https://example.com/logo.png">
-                            <p class="text-xs text-gray-400 mt-1">Enter a public image URL for your store logo. Leave blank to show text logo.</p>
-                        </div>
-                        @if($v('logo_url'))
-                        <div class="shrink-0">
-                            <img id="logo_preview" src="{{ $v('logo_url') }}" alt="Logo Preview"
-                                 class="h-12 w-auto rounded border border-gray-200 object-contain bg-gray-50 p-1">
-                        </div>
-                        @else
-                        <div class="shrink-0">
-                            <div id="logo_preview_placeholder" class="h-12 w-20 rounded border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xs">No logo</div>
-                        </div>
-                        @endif
-                    </div>
-                    <script>
-                        (function(){
-                            var inp = document.getElementById('logo_url_input');
-                            if(inp) inp.addEventListener('input', function(){
-                                var prev = document.getElementById('logo_preview') || document.getElementById('logo_preview_placeholder');
-                                if(this.value) {
-                                    if(prev && prev.tagName === 'DIV') {
-                                        var img = document.createElement('img');
-                                        img.id = 'logo_preview'; img.alt = 'Logo Preview';
-                                        img.className = 'h-12 w-auto rounded border border-gray-200 object-contain bg-gray-50 p-1';
-                                        img.src = this.value;
-                                        prev.parentNode.replaceChild(img, prev);
-                                    } else if(prev) { prev.src = this.value; }
-                                }
-                            });
-                        })();
-                    </script>
+                    <label class="form-label">Store Logo</label>
+                    <x-image-input name="logo_url" :value="$v('logo_url')" />
+                    <p class="text-xs text-gray-400 mt-1">Upload or enter a URL for your store logo. Leave blank to show text logo.</p>
                 </div>
             </div>
         </div>

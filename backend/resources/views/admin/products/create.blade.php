@@ -29,8 +29,21 @@
                     <textarea name="description" required rows="5" class="form-input" placeholder="Detailed product description…">{{ old('description') }}</textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Image URL *</label>
-                    <input type="url" name="image" value="{{ old('image') }}" required class="form-input" placeholder="https://images.unsplash.com/…">
+                    <label class="form-label">Product Image *</label>
+                    <x-image-input name="image" :value="old('image', '')" :required="true" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Additional Images</label>
+                    <div id="extra-images-container" class="space-y-2">
+                        <div class="extra-img-row flex gap-2 items-start">
+                            <div class="flex-1">
+                                <x-image-input name="extra_images[]" :value="''" />
+                            </div>
+                            <button type="button" onclick="removeImageRow(this)" class="mt-1 text-red-400 hover:text-red-600 text-sm px-2 py-1 shrink-0">✕</button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addImageRow()" class="mt-2 btn-secondary text-xs">+ Add Another Image</button>
+                    <p class="text-xs text-gray-400 mt-1">Add up to 8 additional product images.</p>
                 </div>
             </div>
 
@@ -38,11 +51,11 @@
                 <h3 class="font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">Pricing & Inventory</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label class="form-label">Price ($) *</label>
+                        <label class="form-label">Price ({{ store_setting('currency_symbol', '৳') }}) *</label>
                         <input type="number" name="price" value="{{ old('price') }}" required step="0.01" min="0" class="form-input" placeholder="0.00">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Compare Price ($)</label>
+                        <label class="form-label">Compare Price ({{ store_setting('currency_symbol', '৳') }})</label>
                         <input type="number" name="compare_price" value="{{ old('compare_price') }}" step="0.01" min="0" class="form-input" placeholder="0.00">
                     </div>
                     <div class="form-group">
@@ -101,3 +114,36 @@
     </div>
 </form>
 @endsection
+
+@push('scripts')
+<script>
+function addImageRow() {
+    const container = document.getElementById('extra-images-container');
+    if (container.children.length >= 8) { alert('Maximum 8 additional images allowed.'); return; }
+    const template = container.children[0].cloneNode(true);
+    // Reset the hidden input value
+    const hiddenInput = template.querySelector('input[type="hidden"]');
+    if (hiddenInput) hiddenInput.value = '';
+    // Reset the url input
+    const urlInput = template.querySelector('input[type="url"], input[type="text"]');
+    if (urlInput) urlInput.value = '';
+    // Remove preview
+    const preview = template.querySelector('.mt-2');
+    if (preview) preview.style.display = 'none';
+    container.appendChild(template);
+    // Re-init Alpine for new element
+    if (window.Alpine) Alpine.initTree(template);
+}
+function removeImageRow(btn) {
+    const container = document.getElementById('extra-images-container');
+    if (container.children.length <= 1) {
+        // Just clear it instead of removing
+        const row = btn.closest('.extra-img-row');
+        const hiddenInput = row.querySelector('input[type="hidden"]');
+        if (hiddenInput) hiddenInput.value = '';
+        return;
+    }
+    btn.closest('.extra-img-row').remove();
+}
+</script>
+@endpush

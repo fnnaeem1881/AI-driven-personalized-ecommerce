@@ -25,53 +25,103 @@
         </div>
 
         {{-- Wishlist btn --}}
-        <button data-wishlist="{{ $product->id }}"
-            style="position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(13,21,38,0.8);border:1px solid rgba(59,130,246,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s;"
-            onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(13,21,38,0.8)'">
+        <button data-wishlist="{{ $product->id }}" class="card-wish-btn">
             <span class="wish-icon">🤍</span>
         </button>
 
         {{-- Overlay add to cart --}}
         <div class="overlay-actions">
-            <button data-add-cart="{{ $product->id }}" data-qty="1"
-                style="flex:1;background:linear-gradient(135deg,#3B82F6,#8B5CF6);border:none;border-radius:8px;padding:0.5rem;color:white;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
+            <button data-add-cart="{{ $product->id }}" data-qty="1" class="card-cart-btn">
                 🛒 Add to Cart
             </button>
-            <a href="{{ route('products.show', $product->slug) }}"
-                style="width:36px;height:36px;background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#3B82F6;text-decoration:none;font-size:0.875rem;">👁</a>
+            <a href="{{ route('products.show', $product->slug) }}" class="card-view-btn">👁</a>
         </div>
     </div>
 
     {{-- Info --}}
-    <div style="padding:1rem;">
-        {{-- Brand --}}
-        <div style="font-size:0.7rem;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;">
-            {{ $product->brand }}
-        </div>
+    <div class="pc-info">
+        <div class="pc-brand">{{ $product->brand }}</div>
 
-        {{-- Name --}}
-        <a href="{{ route('products.show', $product->slug) }}" style="text-decoration:none;">
-            <h3 style="font-size:0.875rem;font-weight:600;color:#F1F5F9;line-height:1.4;margin-bottom:0.5rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                {{ $product->name }}
-            </h3>
+        <a href="{{ route('products.show', $product->slug) }}" class="pc-name-link">
+            <h3 class="pc-name">{{ $product->name }}</h3>
         </a>
 
-        {{-- Stars --}}
-        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.625rem;">
+        <div class="pc-stars">
             <div class="stars" style="font-size:0.75rem;">
                 @for($i = 1; $i <= 5; $i++)
                     {{ $i <= round($product->rating) ? '★' : '☆' }}
                 @endfor
             </div>
-            <span style="font-size:0.7rem;color:#64748B;">({{ $product->reviews_count }})</span>
+            <span class="pc-reviews">({{ $product->reviews_count }})</span>
         </div>
 
-        {{-- Price (BDT) --}}
-        <div style="display:flex;align-items:center;gap:0.625rem;">
-            <span style="font-size:1.1rem;font-weight:800;color:#3B82F6;">{{ format_currency($product->price) }}</span>
+        <div class="pc-price-row">
+            <span class="pc-price">{{ format_currency($product->price) }}</span>
             @if($product->compare_price)
-                <span style="font-size:0.8rem;color:#64748B;text-decoration:line-through;">{{ format_currency($product->compare_price) }}</span>
+                <span class="pc-compare">{{ format_currency($product->compare_price) }}</span>
             @endif
         </div>
     </div>
 </div>
+
+<style>
+.card-wish-btn {
+    position: absolute; top: 10px; right: 10px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(13,21,38,0.8);
+    border: 1px solid rgba(59,130,246,0.2);
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 0.9rem; transition: all 0.2s;
+}
+.card-wish-btn:hover { background: rgba(59,130,246,0.2); }
+[data-theme="light"] .card-wish-btn { background: rgba(255,255,255,0.9); border-color: #E2E8F0; }
+
+.card-cart-btn {
+    flex: 1;
+    background: linear-gradient(135deg,#3B82F6,#8B5CF6);
+    border: none; border-radius: 8px; padding: 0.5rem;
+    color: white; font-size: 0.8rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+}
+.card-view-btn {
+    width: 36px; height: 36px;
+    background: rgba(59,130,246,0.2);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 8px; display: flex;
+    align-items: center; justify-content: center;
+    color: #3B82F6; text-decoration: none; font-size: 0.875rem;
+}
+
+/* Product card info */
+.pc-info { padding: 1rem; }
+.pc-brand {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+.pc-name-link { text-decoration: none; }
+.pc-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.pc-stars { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.625rem; }
+.pc-reviews { font-size: 0.7rem; color: var(--text-muted); }
+.pc-price-row { display: flex; align-items: center; gap: 0.625rem; }
+.pc-price { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
+.pc-compare { font-size: 0.8rem; color: var(--text-muted); text-decoration: line-through; }
+
+/* Light theme overrides */
+[data-theme="light"] .pc-name { color: #0F172A; }
+[data-theme="light"] .pc-brand { color: #64748B; }
+[data-theme="light"] .pc-reviews { color: #94A3B8; }
+</style>

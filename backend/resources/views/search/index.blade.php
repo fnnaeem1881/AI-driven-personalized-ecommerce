@@ -5,7 +5,7 @@
 <div style="max-width:1280px;margin:0 auto;padding:2rem 1rem;">
 
     <div style="margin-bottom:2rem;">
-        <h1 style="font-size:1.75rem;font-weight:800;color:#F1F5F9;">
+        <h1 style="font-size:1.75rem;font-weight:800;color:var(--text-primary);">
             @if($query)
                 🔍 Results for "<span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ $query }}</span>"
             @else
@@ -13,7 +13,7 @@
             @endif
         </h1>
         <p style="color:#64748B;margin-top:0.375rem;font-size:0.875rem;">
-            Found <strong style="color:#F1F5F9;">{{ $products->total() }}</strong> results
+            Found <strong style="color:var(--text-primary);">{{ $products->total() }}</strong> results
         </p>
     </div>
 
@@ -21,7 +21,7 @@
 
         {{-- Filter Sidebar --}}
         <div class="glass-card" style="padding:1.25rem;position:sticky;top:80px;">
-            <h3 style="font-size:0.875rem;font-weight:700;color:#F1F5F9;margin-bottom:1rem;">🔧 Refine Results</h3>
+            <h3 style="font-size:0.875rem;font-weight:700;color:var(--text-primary);margin-bottom:1rem;">🔧 Refine Results</h3>
             <form method="GET" action="{{ route('search') }}">
                 <input type="hidden" name="q" value="{{ $query }}">
 
@@ -73,7 +73,7 @@
             @if($products->isEmpty())
             <div style="text-align:center;padding:5rem 2rem;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;">
                 <div style="font-size:4rem;margin-bottom:1rem;">🔍</div>
-                <h3 style="font-size:1.25rem;font-weight:700;color:#F1F5F9;margin-bottom:0.5rem;">No results found</h3>
+                <h3 style="font-size:1.25rem;font-weight:700;color:var(--text-primary);margin-bottom:0.5rem;">No results found</h3>
                 <p style="color:#64748B;margin-bottom:1.5rem;">Try different keywords or browse our categories.</p>
                 <a href="{{ route('products.index') }}" class="btn-primary">Browse All Products</a>
             </div>

@@ -6,7 +6,7 @@
     <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:2rem;">
         <a href="{{ route('account.dashboard') }}" style="color:#64748B;text-decoration:none;" onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color='#64748B'">← Dashboard</a>
         <span style="color:#374151;">›</span>
-        <h1 style="font-size:1.5rem;font-weight:800;color:#F1F5F9;">Profile Settings</h1>
+        <h1 style="font-size:1.5rem;font-weight:800;color:var(--text-primary);">Profile Settings</h1>
     </div>
 
     @if(session('success'))
@@ -18,7 +18,7 @@
         <div style="display:flex;align-items:center;gap:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border);margin-bottom:1.75rem;">
             <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900;color:white;">{{ strtoupper(substr($user->name,0,1)) }}</div>
             <div>
-                <div style="font-size:1.1rem;font-weight:700;color:#F1F5F9;">{{ $user->name }}</div>
+                <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">{{ $user->name }}</div>
                 <div style="font-size:0.875rem;color:#64748B;">{{ $user->email }}</div>
                 <div style="font-size:0.75rem;color:#374151;margin-top:0.375rem;">Member since {{ $user->created_at->format('M Y') }}</div>
             </div>

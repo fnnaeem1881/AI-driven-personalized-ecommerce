@@ -4,7 +4,7 @@
 @section('content')
 <div style="max-width:1100px;margin:0 auto;padding:2rem 1rem;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
-        <h1 style="font-size:2rem;font-weight:800;color:#F1F5F9;">❤️ My Wishlist
+        <h1 style="font-size:2rem;font-weight:800;color:var(--text-primary);">❤️ My Wishlist
             <span style="font-size:1rem;font-weight:400;color:#64748B;margin-left:0.75rem;">{{ $wishlistItems->count() }} item(s)</span>
         </h1>
         <a href="{{ route('products.index') }}" class="btn-ghost">+ Add More Products</a>
@@ -13,7 +13,7 @@
     @if($wishlistItems->isEmpty())
     <div style="text-align:center;padding:5rem 2rem;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;">
         <div style="font-size:4rem;margin-bottom:1rem;">❤️</div>
-        <h2 style="font-size:1.25rem;font-weight:700;color:#F1F5F9;margin-bottom:0.5rem;">Your wishlist is empty</h2>
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-primary);margin-bottom:0.5rem;">Your wishlist is empty</h2>
         <p style="color:#64748B;margin-bottom:1.5rem;">Save products you love by clicking the ❤️ button on any product.</p>
         <a href="{{ route('products.index') }}" class="btn-primary">Browse Products</a>
     </div>
@@ -35,7 +35,7 @@
 
             <div style="padding:1rem;">
                 <div style="font-size:0.7rem;color:#64748B;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">{{ $item->product->brand }}</div>
-                <h3 style="font-size:0.875rem;font-weight:600;color:#F1F5F9;margin-bottom:0.75rem;">{{ Str::limit($item->product->name, 45) }}</h3>
+                <h3 style="font-size:0.875rem;font-weight:600;color:var(--text-primary);margin-bottom:0.75rem;">{{ Str::limit($item->product->name, 45) }}</h3>
                 <div style="display:flex;align-items:center;gap:0.625rem;margin-bottom:0.875rem;">
                     <span style="font-size:1rem;font-weight:800;color:#3B82F6;">{{ format_currency($item->product->price) }}</span>
                 </div>

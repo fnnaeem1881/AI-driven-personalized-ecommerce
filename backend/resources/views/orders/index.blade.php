@@ -3,12 +3,12 @@
 
 @section('content')
 <div style="max-width:1000px;margin:0 auto;padding:2rem 1rem;">
-    <h1 style="font-size:2rem;font-weight:800;color:#F1F5F9;margin-bottom:2rem;">📦 My Orders</h1>
+    <h1 style="font-size:2rem;font-weight:800;color:var(--text-primary);margin-bottom:2rem;">📦 My Orders</h1>
 
     @if($orders->isEmpty())
     <div style="text-align:center;padding:5rem 2rem;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;">
         <div style="font-size:4rem;margin-bottom:1rem;">📦</div>
-        <h2 style="font-size:1.25rem;font-weight:700;color:#F1F5F9;margin-bottom:0.5rem;">No orders yet</h2>
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-primary);margin-bottom:0.5rem;">No orders yet</h2>
         <p style="color:#64748B;margin-bottom:1.5rem;">Your order history will appear here after your first purchase.</p>
         <a href="{{ route('products.index') }}" class="btn-primary">Start Shopping</a>
     </div>
@@ -23,15 +23,15 @@
                 </div>
                 <div>
                     <div style="font-size:0.75rem;color:#64748B;margin-bottom:0.25rem;">Date</div>
-                    <div style="font-size:0.875rem;color:#F1F5F9;">{{ $order->created_at->format('M d, Y') }}</div>
+                    <div style="font-size:0.875rem;color:var(--text-primary);">{{ $order->created_at->format('M d, Y') }}</div>
                 </div>
                 <div>
                     <div style="font-size:0.75rem;color:#64748B;margin-bottom:0.25rem;">Items</div>
-                    <div style="font-size:0.875rem;color:#F1F5F9;">{{ $order->items->count() }} item(s)</div>
+                    <div style="font-size:0.875rem;color:var(--text-primary);">{{ $order->items->count() }} item(s)</div>
                 </div>
                 <div>
                     <div style="font-size:0.75rem;color:#64748B;margin-bottom:0.25rem;">Total</div>
-                    <div style="font-size:1rem;font-weight:800;color:#F1F5F9;">{{ format_currency($order->total) }}</div>
+                    <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">{{ format_currency($order->total) }}</div>
                 </div>
                 <div>
                     @php

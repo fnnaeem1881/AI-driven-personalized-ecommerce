@@ -12,7 +12,7 @@
                 <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;color:white;margin:0 auto 0.75rem;">
                     {{ strtoupper(substr($user->name, 0, 1)) }}
                 </div>
-                <div style="font-size:0.9rem;font-weight:700;color:#F1F5F9;">{{ $user->name }}</div>
+                <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);">{{ $user->name }}</div>
                 <div style="font-size:0.75rem;color:#64748B;">{{ $user->email }}</div>
             </div>
             <a href="{{ route('account.dashboard') }}" class="account-nav-item active">📊 Dashboard</a>
@@ -29,19 +29,19 @@
 
         {{-- Main Content --}}
         <div>
-            <h1 style="font-size:1.75rem;font-weight:800;color:#F1F5F9;margin-bottom:1.5rem;">Welcome back, {{ explode(' ', $user->name)[0] }}! 👋</h1>
+            <h1 style="font-size:1.75rem;font-weight:800;color:var(--text-primary);margin-bottom:1.5rem;">Welcome back, {{ explode(' ', $user->name)[0] }}! 👋</h1>
 
             {{-- Stats --}}
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
                 @foreach([
                     ['📦','Total Orders', $stats['total_orders'],'blue'],
-                    ['💰','Total Spent','$'.number_format($stats['total_spent'],2),'purple'],
+                    ['💰','Total Spent',format_currency($stats['total_spent']),'purple'],
                     ['❤️','Wishlist Items',$stats['wishlist_count'],'pink'],
                     ['⏳','Pending Orders',$stats['pending_orders'],'yellow'],
                 ] as [$icon,$label,$val,$color])
                 <div class="stat-card">
                     <div style="font-size:1.5rem;margin-bottom:0.75rem;">{{ $icon }}</div>
-                    <div style="font-size:1.5rem;font-weight:900;color:#F1F5F9;margin-bottom:0.25rem;">{{ $val }}</div>
+                    <div style="font-size:1.5rem;font-weight:900;color:var(--text-primary);margin-bottom:0.25rem;">{{ $val }}</div>
                     <div style="font-size:0.8rem;color:#64748B;">{{ $label }}</div>
                 </div>
                 @endforeach
@@ -50,7 +50,7 @@
             {{-- Recent Orders --}}
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;margin-bottom:1.5rem;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-                    <h3 style="font-size:1rem;font-weight:700;color:#F1F5F9;">Recent Orders</h3>
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--text-primary);">Recent Orders</h3>
                     <a href="{{ route('orders.index') }}" style="font-size:0.8rem;color:#3B82F6;text-decoration:none;">View All →</a>
                 </div>
                 @forelse($recentOrders as $order)
@@ -60,7 +60,7 @@
                         <div style="font-size:0.75rem;color:#64748B;">{{ $order->created_at->format('M d, Y') }} · {{ $order->items->count() }} item(s)</div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-size:0.875rem;font-weight:700;color:#F1F5F9;">{{ format_currency($order->total) }}</div>
+                        <div style="font-size:0.875rem;font-weight:700;color:var(--text-primary);">{{ format_currency($order->total) }}</div>
                         @php $colors = ['pending'=>'yellow','processing'=>'blue','shipped'=>'purple','delivered'=>'green','cancelled'=>'red']; @endphp
                         <span class="badge badge-{{ $colors[$order->status] ?? 'gray' }}" style="font-size:0.65rem;">{{ ucfirst($order->status) }}</span>
                     </div>
@@ -75,7 +75,7 @@
             <div>
                 <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.25rem;">
                     <span>🤖</span>
-                    <h3 style="font-size:1rem;font-weight:700;color:#F1F5F9;">Recommended For You</h3>
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--text-primary);">Recommended For You</h3>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;">
                     @foreach($recommendations as $p)

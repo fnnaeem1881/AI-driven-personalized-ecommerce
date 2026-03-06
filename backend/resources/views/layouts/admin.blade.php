@@ -6,10 +6,63 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') — TechNova Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
+        /* CSS variables so pagination template renders correctly in admin */
+        :root {
+            --bg-elevated:#F8FAFC; --bg-card:#FFFFFF; --bg-dark:#F1F5F9;
+            --border:#E2E8F0; --border-hover:rgba(59,130,246,0.4);
+            --text-primary:#0F172A; --text-subtle:#475569; --text-muted:#94A3B8;
+            --primary:#3B82F6; --secondary:#8B5CF6;
+            --primary-glow:rgba(59,130,246,0.2); --secondary-glow:rgba(139,92,246,0.2);
+            --success:#10B981; --danger:#EF4444; --warning:#F59E0B;
+        }
+        /* Select2 custom styling */
+        .select2-container--default .select2-selection--multiple,
+        .select2-container--default .select2-selection--single {
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 8px !important;
+            background: #F8FAFC !important;
+            min-height: 40px !important;
+            font-size: 14px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 38px !important;
+            padding-left: 12px !important;
+            color: #0F172A !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background: #DBEAFE !important;
+            border: none !important;
+            color: #1D4ED8 !important;
+            border-radius: 6px !important;
+            font-size: 12px !important;
+            padding: 2px 8px !important;
+            margin: 4px 4px 0 0 !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #1D4ED8 !important;
+            margin-right: 4px !important;
+        }
+        .select2-container--default .select2-results__option--highlighted {
+            background: #3B82F6 !important;
+        }
+        .select2-dropdown {
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+        }
+        .select2-search--dropdown .select2-search__field {
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 6px !important;
+            padding: 6px 10px !important;
+            font-size: 13px !important;
+        }
         .sidebar-link { display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:8px; color:#475569; font-size:14px; font-weight:500; text-decoration:none; transition:all .15s; }
         .sidebar-link:hover { background:#EFF6FF; color:#1D4ED8; }
         .sidebar-link.active { background:#EFF6FF; color:#1D4ED8; font-weight:600; }
@@ -71,6 +124,10 @@
         <a href="{{ route('admin.users.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
             👥 <span>Users</span>
+        </a>
+        <a href="{{ route('admin.flash-deals.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.flash-deals*') ? 'active' : '' }}">
+            ⚡ <span>Flash Deals</span>
         </a>
         <a href="{{ route('admin.slides.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.slides*') ? 'active' : '' }}">
@@ -166,5 +223,34 @@
     </footer>
 </div>
 
+<script>
+$(document).ready(function () {
+    // Init all selects with Select2 (except those marked no-select2)
+    $('select:not(.no-select2):not([multiple])').each(function () {
+        $(this).select2({
+            width: '100%',
+            placeholder: $(this).data('placeholder') || 'Select...',
+            allowClear: !$(this).prop('required'),
+            minimumResultsForSearch: 6,
+        });
+    });
+    // Multi-select with search (e.g. product assignment)
+    $('select[multiple]:not(.no-select2)').each(function () {
+        $(this).select2({
+            width: '100%',
+            placeholder: $(this).data('placeholder') || 'Search and select...',
+            allowClear: true,
+        });
+    });
+    // Re-init after Alpine.js DOM updates (for dynamically shown selects)
+    document.addEventListener('alpine:initialized', function () {
+        setTimeout(function () {
+            $('select:not(.no-select2):not(.select2-hidden-accessible)').select2({ width: '100%' });
+        }, 100);
+    });
+});
+</script>
+
+@stack("scripts")
 </body>
 </html>

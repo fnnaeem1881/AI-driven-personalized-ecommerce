@@ -3,7 +3,7 @@
         {{-- Left: Promo message --}}
         <div class="flex items-center gap-2" style="color:#94A3B8; font-size:0.75rem;">
             <span style="color:#F59E0B;">🔥</span>
-            <span>Free shipping on orders over <strong style="color:#F1F5F9;">{{ format_currency(store_setting('free_shipping_threshold', 1000)) }}</strong></span>
+            <span>Free shipping on orders over <strong style="color:var(--text-primary);">{{ format_currency(store_setting('free_shipping_threshold', 1000)) }}</strong></span>
             <span style="color:#3B82F6; margin-left:1rem;">● SUMMER25 — Extra 15% off</span>
         </div>
 

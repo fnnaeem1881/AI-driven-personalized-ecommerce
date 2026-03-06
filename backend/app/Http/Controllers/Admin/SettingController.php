@@ -36,7 +36,7 @@ class SettingController extends Controller
             'min_order_amount'         => 'nullable|numeric|min:0',
             'store_status'             => 'required|in:open,maintenance',
             'maintenance_message'      => 'nullable|string|max:300',
-            'logo_url'                 => 'nullable|url|max:500',
+            'logo_url'                 => 'nullable|string|max:500',
             'hero_badge'               => 'nullable|string|max:100',
             'hero_title'               => 'nullable|string|max:100',
             'hero_subtitle'            => 'nullable|string|max:100',
