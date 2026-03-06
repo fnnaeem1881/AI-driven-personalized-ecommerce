@@ -61,3 +61,5 @@ backend/.vscode/
 .idea/
 .vscode/
 .claude
+start-all.bat
+start-all.ps1
