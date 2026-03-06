@@ -148,6 +148,20 @@
 /* Light theme: fix flash deal banner text (on light reddish gradient bg) */
 [data-theme="light"] .flash-deal-banner [style*="color:#F1F5F9"] { color: var(--text-primary) !important; }
 
+/* ─── Fix hover states broken by !important override ───────────────────────
+   When .btn-outline:hover changes background to blue, text must be white.
+   Also restore proper JS-driven hover colors for nav/dropdown links.
+   ────────────────────────────────────────────────────────────────────────── */
+/* btn-outline hover: blue bg → white text */
+[data-theme="light"] .btn-outline:hover { color: #ffffff !important; }
+/* Hero slider btn-outline hover (on dark overlay) */
+[data-theme="light"] .hs-inner .btn-outline:hover { color: #ffffff !important; }
+/* JS hover: onmouseover sets color to #F1F5F9 on dark backgrounds — allow white */
+[data-theme="light"] [style*="background:#0d1526"] a:hover,
+[data-theme="light"] [style*="background:#0d1526"] button:hover { color: #F1F5F9 !important; }
+/* Category nav and header links that use JS onmouseover → #3B82F6 */
+[data-theme="light"] .main-header nav a:hover { color: #3B82F6 !important; }
+
 /* ── Base ───────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
 
