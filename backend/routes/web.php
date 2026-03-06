@@ -95,6 +95,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('ai-health', [\App\Http\Controllers\Admin\AdminController::class, 'aiHealth'])->name('ai-health');
     Route::post('ai-retrain', [\App\Http\Controllers\Admin\AdminController::class, 'aiRetrain'])->name('ai-retrain');
 
+    // ClickHouse Analytics
+    Route::get('analytics', [\App\Http\Controllers\Admin\AdminController::class, 'analytics'])->name('analytics');
+    Route::get('analytics/events', [\App\Http\Controllers\Admin\AdminController::class, 'analyticsEvents'])->name('analytics.events');
+
     // Admin Profile
     Route::get('profile', [\App\Http\Controllers\Admin\AdminProfileController::class, 'index'])->name('profile');
     Route::post('profile', [\App\Http\Controllers\Admin\AdminProfileController::class, 'update'])->name('profile.update');
