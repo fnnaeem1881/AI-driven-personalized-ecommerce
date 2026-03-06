@@ -14,12 +14,12 @@
         </button>
     </div>
 
-    {{-- Hidden field that always holds the final URL --}}
-    <input type="hidden" name="{{ $name }}" :value="url">
+    {{-- Hidden field stores relative path (for uploads) or full URL (for external URLs) --}}
+    <input type="hidden" name="{{ $name }}" :value="storedValue">
 
     {{-- URL input mode --}}
     <div x-show="mode === 'url'">
-        <input type="url" x-model="url" @input="preview = url"
+        <input type="url" x-model="url" @input="storedValue = url"
             class="form-input" placeholder="https://example.com/image.jpg"
             {{ $required ? 'required' : '' }}>
     </div>
@@ -44,17 +44,30 @@
         <img :src="url" alt="Preview"
             class="h-24 w-auto max-w-xs rounded-lg border border-gray-200 object-cover bg-gray-50"
             x-on:error="this.style.opacity='0.3'">
-        <p class="text-xs text-gray-400 mt-1 truncate max-w-xs" x-text="url"></p>
+        <p class="text-xs text-gray-400 mt-1 truncate max-w-xs" x-text="storedValue"></p>
     </div>
 </div>
 
 <script>
 if (typeof imageInput === 'undefined') {
-    function imageInput(initialUrl) {
+    function imageInput(initialValue) {
+        // If it's a local storage URL (contains /storage/), extract the relative path.
+        // This also migrates old localhost-hardcoded URLs to portable relative paths.
+        const toStoredValue = v => {
+            if (!v) return '';
+            if (v.includes('/storage/')) return v.split('/storage/').pop();
+            return v; // external URL — store as-is
+        };
+        // Convert a stored relative path to a previewable URL for the img tag
+        const toPreviewUrl = v => v && !v.startsWith('http') ? '/storage/' + v : (v || '');
+
+        const stored = toStoredValue(initialValue);
         return {
             mode: 'url',
-            url: initialUrl || '',
-            preview: initialUrl || '',
+            // storedValue: what gets saved to DB (relative path for uploads, full URL for external)
+            storedValue: stored,
+            // url: what shows in the preview img and URL text input
+            url: toPreviewUrl(stored),
             uploading: false,
             uploadError: '',
             uploadFile(event) {
@@ -69,8 +82,8 @@ if (typeof imageInput === 'undefined') {
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) {
-                            this.url = data.url;
-                            this.preview = data.url;
+                            this.storedValue = data.path; // relative path → portable across domains
+                            this.url = data.url;          // full URL → used for preview only
                             this.mode = 'url';
                         } else {
                             this.uploadError = 'Upload failed. Try again.';

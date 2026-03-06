@@ -10,6 +10,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FlashDealController;
 
 // ─── Public Routes ────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -18,6 +19,7 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/category/{slug}', [ProductController::class, 'byCategory'])->name('category.show');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/flash-deals', [FlashDealController::class, 'index'])->name('flash-deals.index');
 
 // ─── Cart (public) ────────────────────────────────────────────────────────────
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

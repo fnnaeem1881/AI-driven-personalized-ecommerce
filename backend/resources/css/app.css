@@ -115,6 +115,39 @@
 /* Light theme hero slider overlay tweak */
 [data-theme="light"] .hero-slide-content { text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
 
+/* ─── Light theme: auto-correct hardcoded dark-mode inline colors ─────────
+   CSS !important overrides inline style attributes.
+   We apply globally then restore for contexts that stay dark.
+   ────────────────────────────────────────────────────────────────────────── */
+/* White (#F1F5F9) text → dark primary text */
+[data-theme="light"] [style*="color:#F1F5F9"] { color: var(--text-primary) !important; }
+/* Slate-400 (#94A3B8) — too light on white → readable muted text */
+[data-theme="light"] [style*="color:#94A3B8"] { color: var(--text-muted) !important; }
+
+/* Restore: footer always has dark background — keep original light colors */
+[data-theme="light"] footer [style*="color:#F1F5F9"] { color: #F1F5F9 !important; }
+[data-theme="light"] footer [style*="color:#94A3B8"] { color: #94A3B8 !important; }
+
+/* Restore: top-header promo bar is always dark */
+[data-theme="light"] .top-header [style*="color:#94A3B8"] { color: #94A3B8 !important; }
+
+/* Restore: hero slider text sits over a dark overlay — keep white */
+[data-theme="light"] .hs-inner [style*="color:#F1F5F9"] { color: #F1F5F9 !important; }
+[data-theme="light"] .hs-inner [style*="color:#94A3B8"] { color: #94A3B8 !important; }
+
+/* Restore: user dropdown menu in header (dark card, always) */
+[data-theme="light"] [style*="background:#0d1526"] [style*="color:#94A3B8"] { color: #94A3B8 !important; }
+[data-theme="light"] [style*="background:#0d1526"] [style*="color:#F1F5F9"] { color: #F1F5F9 !important; }
+
+/* Light theme: fix dark inline backgrounds that don't update with theme */
+[data-theme="light"] select[style*="color:#F1F5F9"] {
+  color: var(--text-primary) !important;
+  background: #F8FAFC !important;
+}
+
+/* Light theme: fix flash deal banner text (on light reddish gradient bg) */
+[data-theme="light"] .flash-deal-banner [style*="color:#F1F5F9"] { color: var(--text-primary) !important; }
+
 /* ── Base ───────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
 

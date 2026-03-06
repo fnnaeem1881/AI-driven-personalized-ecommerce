@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\ResolvesStorageUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, ResolvesStorageUrl;
 
     protected $fillable = [
         'category_id', 'name', 'slug', 'description', 'short_description',
@@ -68,5 +69,10 @@ class Product extends Model
     public function getIsInStockAttribute()
     {
         return $this->stock > 0;
+    }
+
+    public function getImageAttribute($value): ?string
+    {
+        return self::resolveStorageUrl($value);
     }
 }

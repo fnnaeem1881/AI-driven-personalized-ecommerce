@@ -55,3 +55,28 @@ if (!function_exists('store_setting')) {
         }
     }
 }
+
+if (!function_exists('storage_url')) {
+    /**
+     * Convert a stored image path to a correct absolute URL for the current domain.
+     * Handles: relative paths (uploads/...), old absolute localhost URLs, external URLs.
+     *
+     * @param  string|null  $path
+     * @return string
+     */
+    function storage_url(?string $path): string
+    {
+        if (empty($path)) return '';
+        // Old absolute URL containing /storage/ → strip domain, rebuild with APP_URL
+        if (str_starts_with($path, 'http') && str_contains($path, '/storage/')) {
+            $relativePath = \Illuminate\Support\Str::after($path, '/storage/');
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($relativePath);
+        }
+        // External URL (picsum, unsplash, CDN) → return as-is
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
+        // Relative path → build URL using APP_URL
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+    }
+}

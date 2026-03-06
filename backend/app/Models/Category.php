@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\ResolvesStorageUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, ResolvesStorageUrl;
 
     protected $fillable = ['name', 'slug', 'icon', 'description', 'image', 'parent_id', 'sort_order', 'is_active'];
 
@@ -31,5 +32,10 @@ class Category extends Model
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    public function getImageAttribute($value): ?string
+    {
+        return self::resolveStorageUrl($value);
     }
 }

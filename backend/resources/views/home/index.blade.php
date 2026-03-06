@@ -29,93 +29,131 @@
         </div>
 
         {{-- RIGHT: Hero Slider --}}
-        <div>
-            <div class="swiper hero-swiper" style="border-radius:16px;overflow:hidden;">
-                <div class="swiper-wrapper">
-                    @if($heroSlides->count() > 0)
-                        @foreach($heroSlides as $slide)
+        <div style="min-width:0;">
+            <style>
+            .hs-wrap{border-radius:16px;overflow:hidden;position:relative;}
+            .hs-inner{position:relative;height:420px;overflow:hidden;}
+            .hs-bg{position:absolute;inset:0;background-size:cover;background-position:center;transform:scale(1.08);transition:transform 8s ease-out;}
+            .swiper-slide-active .hs-bg{transform:scale(1);}
+            .hs-overlay{position:absolute;inset:0;background:linear-gradient(110deg,rgba(6,11,20,0.92) 0%,rgba(6,11,20,0.6) 50%,rgba(6,11,20,0.18) 100%);}
+            .hs-content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:2.5rem 2rem;}
+            .hs-badge,.hs-title,.hs-desc,.hs-actions{opacity:0;transform:translateY(24px);}
+            .swiper-slide-active .hs-badge{animation:hsUp 0.55s cubic-bezier(.22,.68,0,1.2) 0.08s forwards;}
+            .swiper-slide-active .hs-title{animation:hsUp 0.55s cubic-bezier(.22,.68,0,1.2) 0.26s forwards;}
+            .swiper-slide-active .hs-desc{animation:hsUp 0.5s cubic-bezier(.22,.68,0,1.2) 0.42s forwards;}
+            .swiper-slide-active .hs-actions{animation:hsUp 0.5s cubic-bezier(.22,.68,0,1.2) 0.56s forwards;}
+            @keyframes hsUp{to{opacity:1;transform:none;}}
+            .hs-controls{display:flex;align-items:center;gap:0.625rem;padding:0.625rem 1rem;background:rgba(13,21,38,0.75);backdrop-filter:blur(12px);}
+            .hs-arrow{width:34px;height:34px;border-radius:50%;border:1px solid rgba(59,130,246,0.3);background:rgba(59,130,246,0.08);color:#94A3B8;font-size:1.1rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;}
+            .hs-arrow:hover{background:rgba(59,130,246,0.25);color:#F1F5F9;border-color:#3B82F6;box-shadow:0 0 12px rgba(59,130,246,0.3);}
+            .hs-dots-wrap{flex:1;display:flex;justify-content:center;}
+            .hs-dots .swiper-pagination-bullet{background:rgba(148,163,184,0.35);opacity:1;transition:all 0.35s;width:8px;height:8px;}
+            .hs-dots .swiper-pagination-bullet-active{background:#3B82F6;width:22px;border-radius:4px;box-shadow:0 0 8px rgba(59,130,246,0.5);}
+            .hs-counter{font-size:0.72rem;color:#64748B;font-weight:700;letter-spacing:0.05em;white-space:nowrap;}
+            .hs-progress{height:3px;background:rgba(59,130,246,0.12);}
+            .hs-fill{height:3px;background:linear-gradient(90deg,#3B82F6,#8B5CF6);width:0%;transition:none;}
+            </style>
+
+            <div class="hs-wrap">
+                <div class="swiper hero-swiper">
+                    <div class="swiper-wrapper">
+                        @if($heroSlides->count() > 0)
+                            @foreach($heroSlides as $slide)
+                            <div class="swiper-slide">
+                                <div class="hs-inner">
+                                    <div class="hs-bg" style="background-image:url('{{ $slide->image ?: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=1200' }}');"></div>
+                                    <div class="hs-overlay"></div>
+                                    <div class="hs-content">
+                                        @if($slide->badge)
+                                        <div class="hs-badge" style="margin-bottom:0.875rem;">
+                                            <span class="badge {{ $slide->badge_color ?? 'badge-blue' }}">{{ $slide->badge }}</span>
+                                        </div>
+                                        @endif
+                                        <h1 class="hs-title" style="font-size:2.4rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">
+                                            {{ $slide->title }}
+                                            @if($slide->subtitle)
+                                            <br><span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ $slide->subtitle }}</span>
+                                            @endif
+                                        </h1>
+                                        @if($slide->description)
+                                        <p class="hs-desc" style="color:#94A3B8;font-size:0.95rem;margin-bottom:1.5rem;max-width:480px;line-height:1.65;">{{ $slide->description }}</p>
+                                        @endif
+                                        <div class="hs-actions" style="display:flex;gap:1rem;flex-wrap:wrap;">
+                                            <a href="{{ $slide->cta_link }}" class="btn-primary">{{ $slide->cta_text }}</a>
+                                            @if($slide->cta_secondary_text)
+                                            <a href="{{ $slide->cta_secondary_link ?? route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">{{ $slide->cta_secondary_text }}</a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        @else
+                        {{-- Fallback slides --}}
                         <div class="swiper-slide">
-                            <div class="hero-slide" style="min-height:420px;">
-                                @if($slide->image)
-                                <div class="hero-slide-bg" style="background-image:url('{{ $slide->image }}');"></div>
-                                @else
-                                <div class="hero-slide-bg" style="background-image:url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=1200');"></div>
-                                @endif
-                                <div class="hero-slide-content">
-                                    @if($slide->badge)
-                                    <span class="badge {{ $slide->badge_color ?? 'badge-blue' }}" style="margin-bottom:0.75rem;align-self:flex-start;">{{ $slide->badge }}</span>
-                                    @endif
-                                    <h1 style="font-size:2.5rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">
-                                        {{ $slide->title }}
-                                        @if($slide->subtitle)
-                                        <br><span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ $slide->subtitle }}</span>
-                                        @endif
+                            <div class="hs-inner">
+                                <div class="hs-bg" style="background-image:url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=1200');"></div>
+                                <div class="hs-overlay"></div>
+                                <div class="hs-content">
+                                    <div class="hs-badge" style="margin-bottom:0.875rem;"><span class="badge badge-blue">{{ store_setting('hero_badge', '🔥 New Arrival') }}</span></div>
+                                    <h1 class="hs-title" style="font-size:2.4rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">
+                                        {{ store_setting('hero_title', 'Next-Gen Tech') }}<br>
+                                        <span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ store_setting('hero_subtitle', 'At Your Fingertips') }}</span>
                                     </h1>
-                                    @if($slide->description)
-                                    <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">{{ $slide->description }}</p>
-                                    @endif
-                                    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-                                        <a href="{{ $slide->cta_link }}" class="btn-primary">{{ $slide->cta_text }}</a>
-                                        @if($slide->cta_secondary_text)
-                                        <a href="{{ $slide->cta_secondary_link ?? route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">{{ $slide->cta_secondary_text }}</a>
-                                        @endif
+                                    <p class="hs-desc" style="color:#94A3B8;font-size:0.95rem;margin-bottom:1.5rem;max-width:480px;line-height:1.65;">{{ store_setting('meta_description', 'Explore AI-curated electronics, gadgets & more.') }}</p>
+                                    <div class="hs-actions" style="display:flex;gap:1rem;flex-wrap:wrap;">
+                                        <a href="{{ route('products.index') }}" class="btn-primary">{{ store_setting('hero_cta', 'Shop Now') }}</a>
+                                        <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">Explore All</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endforeach
-                    @else
-                    {{-- Fallback slides when no DB slides exist --}}
-                    <div class="swiper-slide">
-                        <div class="hero-slide" style="min-height:420px;">
-                            <div class="hero-slide-bg" style="background-image:url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=1200');"></div>
-                            <div class="hero-slide-content">
-                                <span class="badge badge-blue" style="margin-bottom:0.75rem;align-self:flex-start;">{{ store_setting('hero_badge', '🔥 New Arrival') }}</span>
-                                <h1 style="font-size:2.5rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">
-                                    {{ store_setting('hero_title', 'Next-Gen Tech') }}<br>
-                                    <span style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ store_setting('hero_subtitle', 'At Your Fingertips') }}</span>
-                                </h1>
-                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">{{ store_setting('meta_description', 'Explore AI-curated electronics, gadgets & more.') }}</p>
-                                <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-                                    <a href="{{ route('products.index') }}" class="btn-primary">{{ store_setting('hero_cta', 'Shop Now') }}</a>
-                                    <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">Explore All</a>
+                        <div class="swiper-slide">
+                            <div class="hs-inner">
+                                <div class="hs-bg" style="background-image:url('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200');"></div>
+                                <div class="hs-overlay"></div>
+                                <div class="hs-content">
+                                    <div class="hs-badge" style="margin-bottom:0.875rem;"><span class="badge badge-purple">📱 Flagship</span></div>
+                                    <h1 class="hs-title" style="font-size:2.4rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">
+                                        Samsung Galaxy S24 Ultra<br><span style="background:linear-gradient(135deg,#8B5CF6,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">200MP. AI-Powered.</span>
+                                    </h1>
+                                    <p class="hs-desc" style="color:#94A3B8;font-size:0.95rem;margin-bottom:1.5rem;max-width:480px;line-height:1.65;">Built-in S Pen, Snapdragon 8 Gen 3. The most capable Galaxy smartphone ever made.</p>
+                                    <div class="hs-actions" style="display:flex;gap:1rem;flex-wrap:wrap;">
+                                        <a href="{{ route('category.show', 'smartphones') }}" class="btn-primary">Shop Smartphones</a>
+                                        <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">Learn More</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="hero-slide" style="min-height:420px;">
-                            <div class="hero-slide-bg" style="background-image:url('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200');"></div>
-                            <div class="hero-slide-content">
-                                <span class="badge badge-purple" style="margin-bottom:0.75rem;align-self:flex-start;">📱 Flagship</span>
-                                <h1 style="font-size:2.5rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">Samsung Galaxy S24 Ultra<br><span style="background:linear-gradient(135deg,#8B5CF6,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">200MP. AI-Powered.</span></h1>
-                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">Built-in S Pen, Snapdragon 8 Gen 3. The most capable Galaxy smartphone.</p>
-                                <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-                                    <a href="{{ route('category.show', 'smartphones') }}" class="btn-primary">Shop Smartphones</a>
-                                    <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">Learn More</a>
+                        <div class="swiper-slide">
+                            <div class="hs-inner">
+                                <div class="hs-bg" style="background-image:url('https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=1200');"></div>
+                                <div class="hs-overlay"></div>
+                                <div class="hs-content">
+                                    <div class="hs-badge" style="margin-bottom:0.875rem;"><span class="badge badge-cyan">🎮 Gaming</span></div>
+                                    <h1 class="hs-title" style="font-size:2.4rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">
+                                        PlayStation 5 Slim<br><span style="background:linear-gradient(135deg,#06B6D4,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Play Has No Limits.</span>
+                                    </h1>
+                                    <p class="hs-desc" style="color:#94A3B8;font-size:0.95rem;margin-bottom:1.5rem;max-width:480px;line-height:1.65;">Ultra-high speed SSD. Haptic feedback. Adaptive triggers. 4K gaming at 120fps.</p>
+                                    <div class="hs-actions" style="display:flex;gap:1rem;flex-wrap:wrap;">
+                                        <a href="{{ route('category.show', 'gaming') }}" class="btn-primary">Shop Gaming</a>
+                                        <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">View All</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        @endif
                     </div>
-                    <div class="swiper-slide">
-                        <div class="hero-slide" style="min-height:420px;">
-                            <div class="hero-slide-bg" style="background-image:url('https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=1200');"></div>
-                            <div class="hero-slide-content">
-                                <span class="badge badge-cyan" style="margin-bottom:0.75rem;align-self:flex-start;">🎮 Gaming</span>
-                                <h1 style="font-size:2.5rem;font-weight:900;color:#F1F5F9;line-height:1.1;margin-bottom:0.75rem;">PlayStation 5 Slim<br><span style="background:linear-gradient(135deg,#06B6D4,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Play Has No Limits.</span></h1>
-                                <p style="color:#94A3B8;font-size:1rem;margin-bottom:1.5rem;max-width:500px;">Ultra-high speed SSD. Haptic feedback. Adaptive triggers. 4K gaming at 120fps.</p>
-                                <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-                                    <a href="{{ route('category.show', 'gaming') }}" class="btn-primary">Shop Gaming</a>
-                                    <a href="{{ route('products.index') }}" class="btn-outline" style="color:#94A3B8;border-color:rgba(148,163,184,0.3);">View All</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
                 </div>
-                <div class="swiper-pagination" style="bottom:16px;"></div>
-                <div class="swiper-button-prev"></div>
-                <div class="swiper-button-next"></div>
+                {{-- Progress bar --}}
+                <div class="hs-progress"><div class="hs-fill" id="hsFill"></div></div>
+                {{-- Controls bar --}}
+                <div class="hs-controls">
+                    <button class="hs-arrow hs-prev" aria-label="Previous slide">‹</button>
+                    <div class="hs-dots-wrap"><div class="swiper-pagination hs-dots"></div></div>
+                    <span class="hs-counter" id="hsCounter">01 / 01</span>
+                    <button class="hs-arrow hs-next" aria-label="Next slide">›</button>
+                </div>
             </div>
 
             {{-- Quick Banner Row --}}
@@ -151,6 +189,8 @@
                     <p class="flash-sale-sub">{{ $activeDeal && $activeDeal->description ? $activeDeal->description : 'Limited time deals — grab them before they\'re gone!' }}</p>
                 </div>
             </div>
+            <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;">
+            <a href="{{ route('flash-deals.index') }}" style="font-size:0.8rem;color:#F87171;font-weight:700;text-decoration:none;white-space:nowrap;border:1px solid rgba(248,113,113,0.3);padding:0.35rem 0.875rem;border-radius:20px;transition:all 0.2s;" onmouseover="this.style.background='rgba(248,113,113,0.12)'" onmouseout="this.style.background=''">View All Deals →</a>
             {{-- Countdown --}}
             <div style="display:flex;align-items:center;gap:0.5rem;" id="countdown" data-end="{{ $flashSaleEnds }}">
                 <span style="font-size:0.8rem;color:#64748B;margin-right:0.25rem;">Ends in:</span>
@@ -159,6 +199,7 @@
                 <div class="countdown-box"><div class="num" id="cd-m">00</div><div class="label">min</div></div>
                 <span style="color:#F87171;font-size:1.25rem;font-weight:900;">:</span>
                 <div class="countdown-box"><div class="num" id="cd-s">00</div><div class="label">sec</div></div>
+            </div>
             </div>
         </div>
 
@@ -314,13 +355,49 @@
 
 @push('scripts')
 <script>
-// Hero Swiper
-new Swiper('.hero-swiper', {
-    loop: true, autoplay: { delay: 5000, disableOnInteraction: false },
-    pagination: { el: '.hero-swiper .swiper-pagination', clickable: true },
-    navigation: { nextEl: '.hero-swiper .swiper-button-next', prevEl: '.hero-swiper .swiper-button-prev' },
-    effect: 'fade', fadeEffect: { crossFade: true },
-});
+// Hero Swiper — Ken Burns + staggered text animations
+(function(){
+    const DELAY = 5000;
+    const fill = document.getElementById('hsFill');
+    const counter = document.getElementById('hsCounter');
+    let realTotal = 1;
+
+    function startFill() {
+        if (!fill) return;
+        fill.style.transition = 'none';
+        fill.style.width = '0%';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            fill.style.transition = 'width ' + DELAY + 'ms linear';
+            fill.style.width = '100%';
+        }));
+    }
+
+    function updateCounter(swiper) {
+        if (!counter) return;
+        counter.textContent =
+            String(swiper.realIndex + 1).padStart(2,'0') + ' / ' +
+            String(realTotal).padStart(2,'0');
+    }
+
+    const heroSwiper = new Swiper('.hero-swiper', {
+        loop: true,
+        speed: 750,
+        autoplay: { delay: DELAY, disableOnInteraction: false },
+        pagination: { el: '.hs-dots', clickable: true },
+        navigation: { nextEl: '.hs-next', prevEl: '.hs-prev' },
+        on: {
+            init(swiper) {
+                realTotal = swiper.slides.filter(s => !s.classList.contains('swiper-slide-duplicate')).length;
+                startFill();
+                updateCounter(swiper);
+            },
+            slideChangeTransitionStart(swiper) {
+                startFill();
+                updateCounter(swiper);
+            }
+        }
+    });
+})();
 
 // Flash Sale Swiper
 new Swiper('.flash-swiper', {
