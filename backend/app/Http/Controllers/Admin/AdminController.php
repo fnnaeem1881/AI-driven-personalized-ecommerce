@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\AIService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -39,8 +40,55 @@ class AdminController extends Controller
             ->groupBy('date')->orderBy('date')->get()
             ->pluck('total', 'date')->toArray();
 
+        // ── ClickHouse Live Analytics (from Event Service) ──────────────────────
+        $eventServiceUrl  = config('services.events.url', 'http://localhost:8000');
+        $aiServiceUrl     = config('services.ai.url', 'http://localhost:8001');
+        $liveStats        = [];  // event_type => count
+        $livePopular      = [];  // top popular products from ClickHouse
+        $eventServiceUp   = false;
+        $aiServiceUp      = false;
+
+        try {
+            $r = Http::connectTimeout(2)->timeout(4)->get("{$eventServiceUrl}/stats");
+            if ($r->successful()) {
+                $rawStats = $r->json()['stats'] ?? [];
+                foreach ($rawStats as $row) {
+                    $liveStats[$row['event_type']] = $row['count'] ?? 0;
+                }
+                $eventServiceUp = true;
+            }
+        } catch (\Exception $e) {
+            Log::debug('Admin dashboard event stats: ' . $e->getMessage());
+        }
+
+        try {
+            $r = Http::connectTimeout(2)->timeout(4)->get("{$aiServiceUrl}/health");
+            if ($r->successful()) $aiServiceUp = true;
+        } catch (\Exception $e) {}
+
+        try {
+            if ($aiServiceUp) {
+                $r = Http::connectTimeout(2)->timeout(5)->post("{$aiServiceUrl}/recommendations/popular", ['limit' => 5]);
+                if ($r->successful()) {
+                    $popularIds = array_column($r->json()['popular_products'] ?? [], 'product_id');
+                    if (!empty($popularIds)) {
+                        $livePopular = Product::whereIn('id', $popularIds)->where('is_active', true)
+                            ->get()->sortBy(fn($p) => array_search($p->id, $popularIds))->values();
+                    }
+                }
+            }
+        } catch (\Exception $e) {}
+
+        // Build event funnel
+        $totalViews    = $liveStats['view_product']  ?? 0;
+        $totalCartAdds = $liveStats['add_to_cart']   ?? 0;
+        $totalPurchases= $liveStats['purchase']       ?? 0;
+        $totalEvents   = array_sum($liveStats);
+
         return view('admin.dashboard', compact(
-            'stats', 'recent_orders', 'orders_by_status', 'top_products', 'revenue_last_7_days'
+            'stats', 'recent_orders', 'orders_by_status', 'top_products', 'revenue_last_7_days',
+            'liveStats', 'livePopular', 'eventServiceUp', 'aiServiceUp',
+            'totalViews', 'totalCartAdds', 'totalPurchases', 'totalEvents'
         ));
     }
 

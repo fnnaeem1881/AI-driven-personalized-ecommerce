@@ -222,11 +222,30 @@
 <section class="section-container">
     <div class="section-header">
         <div>
-            <div class="section-badge">
-                <span>🤖</span>
-                <span>AI Powered</span>
+            <div class="section-badge" style="{{ $isPersonalized ? 'background:rgba(139,92,246,0.12);border-color:rgba(139,92,246,0.25);' : '' }}">
+                <span>{{ $isPersonalized ? '🧠' : '🔥' }}</span>
+                <span style="{{ $isPersonalized ? 'color:#8B5CF6;' : '' }}">
+                    {{ $isPersonalized ? 'Personalized for You' : 'Popular Right Now' }}
+                </span>
+                @if(!$isPersonalized)
+                <span style="font-size:0.65rem;color:#06B6D4;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);border-radius:4px;padding:1px 5px;margin-left:4px;">ClickHouse Live</span>
+                @endif
             </div>
-            <h2 class="section-title">Recommended For You</h2>
+            <h2 class="section-title">
+                {{ $isPersonalized ? 'Recommended For You' : 'Most Popular Products' }}
+            </h2>
+            @if($isPersonalized)
+            <p class="section-sub" style="font-size:0.78rem;color:#64748B;margin-top:2px;">
+                🧠 Based on your browsing &amp; purchase history
+            </p>
+            @else
+            <p class="section-sub" style="font-size:0.78rem;color:#64748B;margin-top:2px;">
+                📊 Trending across our store — updated in real-time
+                @auth
+                <span style="color:#F59E0B;"> · Browse more to get personalized picks!</span>
+                @endauth
+            </p>
+            @endif
         </div>
         <a href="{{ route('products.index') }}" class="btn-ghost">See All →</a>
     </div>
@@ -281,19 +300,24 @@
 </section>
 
 {{-- ═══════════════════════════════════════════════════════════
-     TRENDING PRODUCTS
+     TRENDING PRODUCTS (ClickHouse-powered)
 ════════════════════════════════════════════════════════════ --}}
 <section class="section-container">
     <div class="section-header">
         <div>
-            <h2 class="section-title">🔥 Trending Now</h2>
-            <p class="section-sub">Most loved products this week</p>
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;">
+                <h2 class="section-title" style="margin:0;">🔥 Trending Now</h2>
+                @if($aiTrendingIsLive)
+                <span style="font-size:0.65rem;color:#06B6D4;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);border-radius:4px;padding:2px 6px;font-weight:600;">📡 Live Data</span>
+                @endif
+            </div>
+            <p class="section-sub">Most viewed &amp; interacted products this week</p>
         </div>
         <a href="{{ route('products.index') }}" class="btn-ghost">See All →</a>
     </div>
     <div class="swiper trending-swiper">
         <div class="swiper-wrapper">
-            @foreach($trending as $product)
+            @foreach($aiTrending as $product)
             <div class="swiper-slide" style="width:240px;">
                 <x-product-card :product="$product" />
             </div>

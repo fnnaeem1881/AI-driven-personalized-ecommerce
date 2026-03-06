@@ -81,6 +81,44 @@ class AIService
     }
 
     /**
+     * Get popular products from ClickHouse behavior data.
+     * Works for all visitors — no login required.
+     */
+    public function getPopularProducts(int $limit = 8, ?int $categoryId = null): array
+    {
+        try {
+            $response = Http::timeout(4)
+                ->post("{$this->baseUrl}/recommendations/popular", [
+                    'limit'       => $limit,
+                    'category_id' => $categoryId,
+                ]);
+            if ($response->successful()) {
+                return $response->json()['popular_products'] ?? [];
+            }
+        } catch (\Exception $e) {}
+        return [];
+    }
+
+    /**
+     * Get trending products (high-growth views) from ClickHouse.
+     * Works for all visitors — no login required.
+     */
+    public function getTrendingProducts(int $limit = 8, int $days = 7): array
+    {
+        try {
+            $response = Http::timeout(4)
+                ->post("{$this->baseUrl}/recommendations/trending", [
+                    'limit' => $limit,
+                    'days'  => $days,
+                ]);
+            if ($response->successful()) {
+                return $response->json()['trending_products'] ?? [];
+            }
+        } catch (\Exception $e) {}
+        return [];
+    }
+
+    /**
      * Get full AI profile for a user (segment, recommendations, interactions, recent events).
      * Used by admin panel user detail page.
      */
