@@ -81,9 +81,9 @@ class AdminController extends Controller
         } catch (\Exception $e) {}
 
         // Build event funnel
-        $totalViews    = $liveStats['view_product']  ?? 0;
-        $totalCartAdds = $liveStats['add_to_cart']   ?? 0;
-        $totalPurchases= $liveStats['purchase']       ?? 0;
+        $totalViews    = $liveStats['product_view'] ?? 0;
+        $totalCartAdds = $liveStats['add_to_cart']  ?? 0;
+        $totalPurchases= $liveStats['purchase']      ?? 0;
         $totalEvents   = array_sum($liveStats);
 
         return view('admin.dashboard', compact(

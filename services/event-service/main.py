@@ -34,6 +34,15 @@ ch_client = clickhouse_connect.get_client(
 
 print("Result clickhouse_connect:", ch_client.query("SELECT 1").result_set[0][0])
 
+# Single lock to serialize all ClickHouse queries (clickhouse-connect does not support
+# concurrent queries on the same session/client instance)
+_ch_lock = asyncio.Lock()
+
+async def ch_query(query: str):
+    """Thread-safe ClickHouse query — serialised through a global asyncio lock."""
+    async with _ch_lock:
+        return await asyncio.to_thread(ch_client.query, query)
+
 class Event(BaseModel):
     event_id: str
     event_type: str
@@ -114,13 +123,14 @@ async def store_event(event: Event):
             event.user_agent[:500],
         ]
 
-        # Reuse the global ch_client to avoid SSL issues creating new connections in threads
+        # Serialize insert through the global lock to prevent concurrent session errors
         col_names = [
             "event_id", "event_type", "user_id", "session_id", "timestamp",
             "product_id", "category_id", "price", "quantity", "cart_total",
             "product_name", "ip_address", "user_agent",
         ]
-        ch_client.insert("events", [row], column_names=col_names)
+        async with _ch_lock:
+            await asyncio.to_thread(ch_client.insert, "events", [row], column_names=col_names)
 
         print(f"[OK] Stored event: {event.event_type}")
 
@@ -147,7 +157,7 @@ async def get_stats():
         GROUP BY event_type
         ORDER BY count DESC
     """
-    result = await asyncio.to_thread(ch_client.query, query)
+    result = await ch_query(query)
     return {
         "stats": [
             {
@@ -185,20 +195,20 @@ async def analytics_overview(days: int = 30):
     """Total event counts, unique users, sessions for the given period."""
     query = f"""
         SELECT
-            COUNT(*)                            AS total_events,
-            COUNT(DISTINCT user_id)             AS unique_users,
-            COUNT(DISTINCT session_id)          AS unique_sessions,
-            countIf(event_type='view_product')  AS views,
-            countIf(event_type='add_to_cart')   AS cart_adds,
-            countIf(event_type='purchase')      AS purchases,
-            countIf(event_type='search')        AS searches,
+            COUNT(*)                             AS total_events,
+            COUNT(DISTINCT user_id)              AS unique_users,
+            COUNT(DISTINCT session_id)           AS unique_sessions,
+            countIf(event_type='product_view')   AS views,
+            countIf(event_type='add_to_cart')    AS cart_adds,
+            countIf(event_type='purchase')       AS purchases,
+            countIf(event_type='search')         AS searches,
             countIf(event_type='wishlist_toggle') AS wishlists,
-            MIN(timestamp)                      AS first_event,
-            MAX(timestamp)                      AS last_event
+            MIN(timestamp)                       AS first_event,
+            MAX(timestamp)                       AS last_event
         FROM events
         WHERE timestamp >= now('Asia/Dhaka') - INTERVAL {int(days)} DAY
     """
-    result = await asyncio.to_thread(ch_client.query, query)
+    result = await ch_query(query)
     r = result.result_rows[0] if result.result_rows else [0]*10
     return {
         "days": days,
@@ -228,7 +238,7 @@ async def analytics_timeline(days: int = 30):
         GROUP BY day, event_type
         ORDER BY day ASC, cnt DESC
     """
-    result = await asyncio.to_thread(ch_client.query, query)
+    result = await ch_query(query)
     rows = [{"day": str(r[0]), "event_type": r[1], "count": int(r[2])} for r in result.result_rows]
     return {"days": days, "rows": rows}
 
@@ -240,7 +250,7 @@ async def analytics_products(days: int = 30, limit: int = 20):
         SELECT
             product_id,
             any(product_name)                       AS product_name,
-            countIf(event_type='view_product')      AS views,
+            countIf(event_type='product_view')      AS views,
             countIf(event_type='add_to_cart')       AS cart_adds,
             countIf(event_type='purchase')          AS purchases,
             COUNT(DISTINCT user_id)                 AS unique_users,
@@ -252,7 +262,7 @@ async def analytics_products(days: int = 30, limit: int = 20):
         ORDER BY views DESC
         LIMIT {int(limit)}
     """
-    result = await asyncio.to_thread(ch_client.query, query)
+    result = await ch_query(query)
     return {
         "days": days,
         "products": [
@@ -277,7 +287,7 @@ async def analytics_users(days: int = 30, limit: int = 20):
         SELECT
             user_id,
             COUNT(*)                                AS total_events,
-            countIf(event_type='view_product')      AS views,
+            countIf(event_type='product_view')      AS views,
             countIf(event_type='add_to_cart')       AS cart_adds,
             countIf(event_type='purchase')          AS purchases,
             COUNT(DISTINCT session_id)              AS sessions,
@@ -291,7 +301,7 @@ async def analytics_users(days: int = 30, limit: int = 20):
         ORDER BY total_events DESC
         LIMIT {int(limit)}
     """
-    result = await asyncio.to_thread(ch_client.query, query)
+    result = await ch_query(query)
     return {
         "days": days,
         "users": [
@@ -334,8 +344,8 @@ async def analytics_recent(limit: int = 50, offset: int = 0, event_type: str = "
         LIMIT {int(limit)} OFFSET {int(offset)}
     """
     count_query = f"SELECT COUNT(*) FROM events WHERE 1=1 {type_filter}"
-    result       = await asyncio.to_thread(ch_client.query, query)
-    count_result = await asyncio.to_thread(ch_client.query, count_query)
+    result       = await ch_query(query)
+    count_result = await ch_query(count_query)
     total = int(count_result.result_rows[0][0]) if count_result.result_rows else 0
     return {
         "total":  total,
@@ -376,7 +386,7 @@ async def analytics_event_types():
         GROUP BY event_type
         ORDER BY total DESC
     """
-    result = await asyncio.to_thread(ch_client.query, query)
+    result = await ch_query(query)
     return {
         "event_types": [
             {
