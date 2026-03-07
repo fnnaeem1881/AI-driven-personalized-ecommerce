@@ -11,10 +11,19 @@ class Setting extends Model
 
     public static function get(string $key, $default = null): mixed
     {
-        return Cache::remember("setting_{$key}", 3600, function () use ($key, $default) {
-            $setting = static::where('key', $key)->first();
-            return $setting ? $setting->value : $default;
-        });
+        // Only cache when the key actually exists in DB; return $default without caching otherwise
+        $cached = Cache::get("setting_{$key}", '__MISS__');
+        if ($cached !== '__MISS__') {
+            return $cached;
+        }
+
+        $setting = static::where('key', $key)->first();
+        if ($setting) {
+            Cache::put("setting_{$key}", $setting->value, 3600);
+            return $setting->value;
+        }
+
+        return $default; // not cached — will re-query next time
     }
 
     public static function set(string $key, $value): void

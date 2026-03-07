@@ -6,6 +6,7 @@
 {{-- ═══════════════════════════════════════════════════════════
      HERO SECTION — Category Sidebar + Hero Slider
 ════════════════════════════════════════════════════════════ --}}
+@if($showHeroSlider)
 <section class="hero-section">
     <div class="hero-grid">
 
@@ -175,10 +176,12 @@
         </div>
     </div>
 </section>
+@endif
 
 {{-- ═══════════════════════════════════════════════════════════
      FLASH SALE
 ════════════════════════════════════════════════════════════ --}}
+@if($showFlashSale && $flashSale->count() > 0)
 <section class="section-container">
     <div class="flash-sale-box">
         <div class="flash-sale-header">
@@ -214,11 +217,13 @@
         </div>
     </div>
 </section>
+@endif
 
 
 {{-- ═══════════════════════════════════════════════════════════
      AI RECOMMENDATIONS
 ════════════════════════════════════════════════════════════ --}}
+@if($showAiRecs && $recommendations->count() > 0)
 <section class="section-container">
     <div class="section-header">
         <div>
@@ -255,10 +260,12 @@
         @endforeach
     </div>
 </section>
+@endif
 
 {{-- ═══════════════════════════════════════════════════════════
      CATEGORY SHOWCASE
 ════════════════════════════════════════════════════════════ --}}
+@if($showCategoryShowcase && $categories->count() > 0)
 <section class="section-container">
     <div class="section-header">
         <h2 class="section-title">Shop by Category</h2>
@@ -280,10 +287,12 @@
         @endforeach
     </div>
 </section>
+@endif
 
 {{-- ═══════════════════════════════════════════════════════════
      FEATURED PRODUCTS
 ════════════════════════════════════════════════════════════ --}}
+@if($showFeatured && $featured->count() > 0)
 <section class="section-container">
     <div class="section-header">
         <div>
@@ -298,10 +307,12 @@
         @endforeach
     </div>
 </section>
+@endif
 
 {{-- ═══════════════════════════════════════════════════════════
      TRENDING PRODUCTS (ClickHouse-powered)
 ════════════════════════════════════════════════════════════ --}}
+@if($showTrending && $aiTrending->count() > 0)
 <section class="section-container">
     <div class="section-header">
         <div>
@@ -325,10 +336,12 @@
         </div>
     </div>
 </section>
+@endif
 
 {{-- ═══════════════════════════════════════════════════════════
      NEW ARRIVALS
 ════════════════════════════════════════════════════════════ --}}
+@if($showNewArrivals && $newArrivals->count() > 0)
 <section class="section-container">
     <div class="section-header">
         <h2 class="section-title">🆕 New Arrivals</h2>
@@ -340,10 +353,12 @@
         @endforeach
     </div>
 </section>
+@endif
 
 {{-- ═══════════════════════════════════════════════════════════
      BRANDS BANNER
 ════════════════════════════════════════════════════════════ --}}
+@if($showBrands)
 <section class="section-container">
     <div class="brands-box">
         <h3 class="brands-label">Trusted Brands</h3>
@@ -354,10 +369,12 @@
         </div>
     </div>
 </section>
+@endif
 
 {{-- ═══════════════════════════════════════════════════════════
      NEWSLETTER
 ════════════════════════════════════════════════════════════ --}}
+@if($showNewsletter)
 <section class="section-container">
     <div class="newsletter-box">
         <div class="newsletter-glow newsletter-glow-tr"></div>
@@ -374,11 +391,13 @@
         </div>
     </div>
 </section>
+@endif
 
 @endsection
 
 @push('scripts')
 <script>
+@if($showHeroSlider)
 // Hero Swiper — Ken Burns + staggered text animations
 (function(){
     const DELAY = 5000;
@@ -422,16 +441,13 @@
         }
     });
 })();
+@endif
 
+@if($showFlashSale && $flashSale->count() > 0)
 // Flash Sale Swiper
 new Swiper('.flash-swiper', {
     slidesPerView: 'auto', spaceBetween: 16, freeMode: true,
     grabCursor: true,
-});
-
-// Trending Swiper
-new Swiper('.trending-swiper', {
-    slidesPerView: 'auto', spaceBetween: 20, freeMode: true, grabCursor: true,
 });
 
 // Flash Sale Countdown
@@ -451,5 +467,13 @@ function updateCountdown() {
 }
 updateCountdown();
 setInterval(updateCountdown, 1000);
+@endif
+
+@if($showTrending && $aiTrending->count() > 0)
+// Trending Swiper
+new Swiper('.trending-swiper', {
+    slidesPerView: 'auto', spaceBetween: 20, freeMode: true, grabCursor: true,
+});
+@endif
 </script>
 @endpush

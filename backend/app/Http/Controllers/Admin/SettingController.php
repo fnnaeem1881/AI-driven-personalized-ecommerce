@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
@@ -56,6 +57,23 @@ class SettingController extends Controller
 
         foreach ($keys as $key) {
             Setting::set($key, $request->input($key, ''));
+        }
+
+        // Homepage section visibility toggles ('1' or '0' from Alpine.js hidden inputs)
+        $toggleKeys = [
+            'show_hero_slider', 'show_flash_sale', 'show_ai_recs',
+            'show_category_showcase', 'show_featured', 'show_trending',
+            'show_new_arrivals', 'show_brands', 'show_newsletter',
+        ];
+        foreach ($toggleKeys as $key) {
+            $val = $request->input($key);
+            // Accept '1' → on, anything else (including missing/null/empty) → off
+            Setting::set($key, $val === '1' ? '1' : '0');
+        }
+
+        // Flush all settings cache to guarantee fresh reads on next page load
+        foreach (array_merge($keys, $toggleKeys) as $k) {
+            Cache::forget("setting_{$k}");
         }
 
         return redirect()->route('admin.settings')

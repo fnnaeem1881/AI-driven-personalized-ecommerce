@@ -237,8 +237,61 @@
 
     {{-- ⑦ Homepage --}}
     <div x-show="tab === 'homepage'" class="space-y-5">
+
+        {{-- Section Visibility --}}
         <div class="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 class="font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">🏠 Hero Banner</h3>
+            <h3 class="font-semibold text-gray-800 mb-1 pb-3 border-b border-gray-100">👁 Homepage Section Visibility</h3>
+            <p class="text-xs text-gray-400 mb-5">Toggle each section on or off. Disabled sections are completely hidden from the storefront.</p>
+            @php
+                $sections = [
+                    ['show_hero_slider',       '🎠', 'Hero Slider',          'Rotating banner with slides. Hides automatically if no slides exist.'],
+                    ['show_flash_sale',        '⚡', 'Flash Sale',           'Limited-time deals countdown. Hides automatically if no active deal.'],
+                    ['show_ai_recs',           '🤖', 'AI Recommendations',   'Personalised or popular product suggestions powered by ClickHouse.'],
+                    ['show_category_showcase', '🗂', 'Category Showcase',    'Visual grid of all active categories.'],
+                    ['show_featured',          '⭐', 'Featured Products',    'Hand-picked featured product grid.'],
+                    ['show_trending',          '🔥', 'Trending Now',         'Products trending based on real-time ClickHouse behavioral data.'],
+                    ['show_new_arrivals',      '🆕', 'New Arrivals',         'The most recently added products.'],
+                    ['show_brands',            '🏷', 'Brands Banner',        'Trusted brands marquee row.'],
+                    ['show_newsletter',        '📧', 'Newsletter Signup',    'Email subscription box at the bottom.'],
+                ];
+            @endphp
+            <div class="divide-y divide-gray-50">
+                @foreach($sections as [$key, $icon, $label, $desc])
+                @php $isOn = ($settings[$key] ?? '1') === '1'; @endphp
+                <div class="flex items-center justify-between py-3.5 gap-4"
+                     x-data="{ on: {{ $isOn ? 'true' : 'false' }} }">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="text-xl w-8 text-center flex-shrink-0">{{ $icon }}</span>
+                        <div class="min-w-0">
+                            <div class="text-sm font-semibold text-gray-800">{{ $label }}</div>
+                            <div class="text-xs text-gray-400 truncate">{{ $desc }}</div>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                        {{-- Use PHP-rendered value as fallback + x-effect for reactive sync --}}
+                        <input type="hidden" name="{{ $key }}"
+                               value="{{ $isOn ? '1' : '0' }}"
+                               x-effect="$el.value = on ? '1' : '0'">
+                        <button type="button" @click="on = !on"
+                                class="w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
+                                :class="on ? 'bg-blue-500' : 'bg-gray-300'"
+                                :aria-checked="on ? 'true' : 'false'" role="switch">
+                            <span class="inline-block w-5 h-5 rounded-full bg-white shadow transform transition-transform duration-200 mt-0.5"
+                                  :class="on ? 'translate-x-6' : 'translate-x-0.5'"></span>
+                        </button>
+                        <span class="ml-2 text-xs font-medium w-6 text-center"
+                              :class="on ? 'text-blue-600' : 'text-gray-400'"
+                              x-text="on ? 'ON' : 'OFF'"></span>
+                    </label>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Hero Fallback Text --}}
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="font-semibold text-gray-800 mb-1 pb-3 border-b border-gray-100">🎠 Hero Slider — Fallback Text</h3>
+            <p class="text-xs text-gray-400 mb-4">Used only when no slides are created in Manage Slides. Add real slides via <a href="{{ route('admin.slides.index') }}" class="text-blue-600 hover:underline">Admin → Slides</a>.</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="form-group mb-0">
                     <label class="form-label">Badge Text</label>
