@@ -35,7 +35,7 @@
                     </div>
                     <div class="form-group mb-0">
                         <label class="form-label">Avatar URL</label>
-                        <input type="url" name="avatar" value="{{ old('avatar', $user->avatar) }}"
+                        <input type="text" name="avatar" value="{{ old('avatar', $user->avatar) }}"
                                class="form-input" placeholder="https://...">
                     </div>
                 </div>

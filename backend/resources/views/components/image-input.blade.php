@@ -18,8 +18,9 @@
     <input type="hidden" name="{{ $name }}" :value="storedValue">
 
     {{-- URL input mode --}}
+    {{-- type="text" avoids browser URL-format validation on hidden inputs (would block form submit) --}}
     <div x-show="mode === 'url'">
-        <input type="url" x-model="url" @input="storedValue = url"
+        <input type="text" x-model="url" @input="storedValue = url"
             class="form-input" placeholder="https://example.com/image.jpg"
             {{ $required ? 'required' : '' }}>
     </div>

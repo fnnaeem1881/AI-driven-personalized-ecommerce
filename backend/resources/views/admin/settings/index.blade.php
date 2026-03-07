@@ -7,7 +7,7 @@
 @section('content')
 @php $v = fn(string $k, $d = '') => $settings[$k] ?? $d; @endphp
 
-<form method="POST" action="{{ route('admin.settings.update') }}" x-data="{ tab: 'general' }">
+<form method="POST" action="{{ route('admin.settings.update') }}" x-data="{ tab: 'general' }" novalidate>
     @csrf
 
     {{-- Tab Nav --}}
@@ -179,7 +179,7 @@
                 ] as [$name, $icon, $label, $ph])
                 <div class="form-group mb-0">
                     <label class="form-label">{{ $icon }} {{ $label }}</label>
-                    <input type="url" name="{{ $name }}" value="{{ $v($name) }}"
+                    <input type="text" name="{{ $name }}" value="{{ $v($name) }}"
                            class="form-input" placeholder="{{ $ph }}">
                 </div>
                 @endforeach
